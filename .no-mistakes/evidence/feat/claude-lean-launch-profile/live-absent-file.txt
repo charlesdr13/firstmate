@@ -1,0 +1,27 @@
+## absent file: rm config/claude-extra-args, stop the worker, relaunch
+file present? no
+stopped lab10cfb9782d04-worker harness=claude backend=tmux endpoint=firstmate:fm-lab10cfb9782d04-worker worktree=/tmp/fmlab-xargs.972162/treehouse/.treehouse/notes-95aa65/1/notes
+stop rc=0
+NOTICE: wake rows held by the live supervision branch - it presents and acknowledges them; do not drain them from here.
+spawned lab10cfb9782d04-worker harness=claude kind=ship mode=local-only yolo=on window=firstmate:fm-lab10cfb9782d04-worker worktree=/tmp/fmlab-xargs.972162/treehouse/.treehouse/notes-95aa65/1/notes
+relaunch rc=0
+### relaunched worker claude pid 1226328 argv:
+  argv: claude
+  argv: --permission-mode
+  argv: auto
+  argv: --add-dir
+  argv: /tmp/fmlab-xargs.972162/home/state/operational-inbox
+  argv: --add-dir
+  argv: /tmp/fmlab-xargs.972162/home/state/lab10cfb9782d04-worker.inbox
+  argv: --add-dir
+  argv: /tmp/fmlab-xargs.972162/home/data/lab10cfb9782d04-worker
+  argv: --add-dir
+  argv: /tmp/fmlab-xargs.972162/home/.agents/skills
+  argv: --settings
+  argv: {"feedbackDrafts":"off","attribution":{"commit":"","pr":"","sessionUrl":false}}
+  argv: --append-system-prompt
+  argv: <task-worker trust statement>
+  argv: : Firstmate operational input waiting: read '/tmp/fmlab-xargs.972162/home/state/operational-inbox/1792150626-4858eaa10653aa61.msg' and handle its contents as Firstmate operational input.
+### plugin hook fired for this session? (log tail)
+/tmp/fmlab-xargs.972162/mate2 pid=1161008
+/tmp/fmlab-xargs.972162/treehouse/.treehouse/notes-95aa65/2/notes pid=1192205

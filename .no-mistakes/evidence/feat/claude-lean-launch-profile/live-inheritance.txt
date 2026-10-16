@@ -1,0 +1,32 @@
+## inheritance: make config/claude-extra-args an untracked, gitignored local file in the lab home (as in a real home)
+untracked; git check-ignore: config/claude-extra-args
+## seed + spawn a second Claude secondmate (labxargs-mate2)
+scaffolded: /tmp/fmlab-xargs.972162/home/data/labxargs-mate2/brief.md (secondmate charter)
+home=/tmp/fmlab-xargs.972162/mate2
+spawned labxargs-mate2 harness=claude kind=secondmate mode=secondmate yolo=off window=firstmate:fm-labxargs-mate2 worktree=/tmp/fmlab-xargs.972162/mate2
+rc=0
+## inherited file in /tmp/fmlab-xargs.972162/mate2/config:
+-rw------- 1 del13s_ubuntu del13s_ubuntu 233 Oct 16 19:35 /tmp/fmlab-xargs.972162/mate2/config/claude-extra-args
+byte-identical to the primary's config/claude-extra-args
+### labxargs-mate2 claude pid 1161008 argv:
+  argv: claude
+  argv: --permission-mode
+  argv: auto
+  argv: --add-dir
+  argv: /tmp/fmlab-xargs.972162/home/state/labxargs-mate2.inbox
+  argv: --setting-sources
+  argv: project,local
+  argv: --strict-mcp-config
+  argv: --plugin-dir
+  argv: /tmp/fmxargs-aux.WQyso9/plugin
+  argv: --append-system-prompt-file
+  argv: /tmp/fmxargs-aux.WQyso9/rules.md
+  argv: --name
+  argv: xargs relaunch "probe" it's
+  argv: --settings
+  argv: /tmp/fmlab-xargs.972162/home/state/labxargs-mate2.claude-settings.json
+  argv: --model
+  argv: sonnet
+  argv: --effort
+  argv: low
+  argv: : Firstmate operational input waiting: read '/tmp/fmlab-xargs.972162/mate2/state/operational-inbox/1792150521-881c50a16f9c780b.msg' and handle its contents as Firstmate operational input.

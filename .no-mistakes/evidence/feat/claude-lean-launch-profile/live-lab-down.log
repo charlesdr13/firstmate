@@ -1,0 +1,9 @@
+stopped: lab tmux server and lab processes
+removed: task temp /tmp/fm-lab10cfb9782d04-mate+474ec35a6245b4c9c39a9d43866cc4a38ed21e5c7e6b6caa91f251a2a90f3873
+removed: task temp /tmp/fm-lab10cfb9782d04-mate
+removed: task temp /tmp/fm-lab10cfb9782d04-worker+474ec35a6245b4c9c39a9d43866cc4a38ed21e5c7e6b6caa91f251a2a90f3873
+removed: task temp /tmp/fm-lab10cfb9782d04-worker
+removed: task temp /tmp/fm-labxargs-mate2+474ec35a6245b4c9c39a9d43866cc4a38ed21e5c7e6b6caa91f251a2a90f3873
+removed: task temp /tmp/fm-labxargs-refuse+474ec35a6245b4c9c39a9d43866cc4a38ed21e5c7e6b6caa91f251a2a90f3873
+removed: 7 Claude project entries under /tmp/fmlab-xargs.972162
+removed: /tmp/fmlab-xargs.972162

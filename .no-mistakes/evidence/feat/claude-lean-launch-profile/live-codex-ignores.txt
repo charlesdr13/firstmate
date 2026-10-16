@@ -1,0 +1,28 @@
+## non-claude harness ignores the (valid) file: ship spawn of labxargs-refuse from the lab home with --harness codex
+  file: # lean worker profile (live validation)
+  file: --setting-sources
+  file: project,local
+  file: 
+  file: --strict-mcp-config
+  file: --plugin-dir
+  file: /tmp/fmxargs-aux.WQyso9/plugin
+  file: --append-system-prompt-file
+  file: /tmp/fmxargs-aux.WQyso9/rules.md
+  file: --name
+  file: xargs relaunch "probe" it's
+spawned labxargs-refuse harness=codex kind=ship mode=local-only yolo=on window=firstmate:fm-labxargs-refuse worktree=/tmp/fmlab-xargs.972162/treehouse/.treehouse/notes-95aa65/3/notes
+rc=0
+### codex pid 1197898 cwd=/tmp/fmlab-xargs.972162/treehouse/.treehouse/notes-95aa65/3/notes argv (launch-brief text elided):
+  argv: codex
+  argv: --dangerously-bypass-approvals-and-sandbox
+  argv: --disable
+  argv: hooks
+  argv: -c
+  argv: notify=["bash","-c","touch '/tmp/fmlab-xargs.972162/home/state/labxargs-refuse.turn-ended'"]
+  argv: <launch-brief doorbell>
+### claude-only extra args present in this codex argv?
+  none (file ignored by the codex launch)
+### task meta:
+window=firstmate:fm-labxargs-refuse
+harness=codex
+kind=ship

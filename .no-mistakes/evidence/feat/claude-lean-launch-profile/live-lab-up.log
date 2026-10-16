@@ -1,0 +1,25 @@
+lab: /tmp/fmlab-xargs.972162 (tear down with: bin/fm-live-lab.sh down /tmp/fmlab-xargs.972162)
+tree: c96e735163d0c150a44475620f1112b14f97213a from /tmp/fmxargs-aux.WQyso9/src
+scaffolded: /tmp/fmlab-xargs.972162/home/data/lab10cfb9782d04-mate/brief.md (secondmate charter)
+home=/tmp/fmlab-xargs.972162/mate
+fm-config-inherit: warning: skipped claude-extra-args for /tmp/fmlab-xargs.972162/mate/config: destination does not allow inherited item (not gitignored or guard failed)
+spawned lab10cfb9782d04-mate harness=claude kind=secondmate mode=secondmate yolo=off window=firstmate:fm-lab10cfb9782d04-mate worktree=/tmp/fmlab-xargs.972162/mate
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+●  WATCHER DOWN - SUPERVISION IS OFF
+●  1 task(s) in flight, but no watcher has a fresh beacon (last beat: never, grace 300s).
+●  Trust the emitted supervision protocol for this harness; do not use shell & for watcher repair.
+●  This is a supervision warning only; the guarded operation WILL still run.
+●  repair missing watcher supervision according to the session-start block for this harness; do not use shell &.
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+spawned lab10cfb9782d04-worker harness=claude kind=ship mode=local-only yolo=on window=firstmate:fm-lab10cfb9782d04-worker worktree=/tmp/fmlab-xargs.972162/treehouse/.treehouse/notes-95aa65/1/notes
+gate: /tmp/fmlab-xargs.972162/home/data/lab10cfb9782d04-worker/gate (touch, then message the worker to resume)
+primary: claude --setting-sources project,local --model sonnet --effort medium --permission-mode auto
+ok primary: claude pid 1001266 in /tmp/fmlab-xargs.972162/home
+ok probe: the primary answered LABREADY-10cfb9782d04
+ok trust: /tmp/fmlab-xargs.972162/home is trusted in the Claude store
+ok host: none running, as expected
+ok watcher: live watcher with a fresh beacon
+ok mate: lab10cfb9782d04-mate pid 977008 in /tmp/fmlab-xargs.972162/mate
+ok worker: lab10cfb9782d04-worker parked on /tmp/fmlab-xargs.972162/home/data/lab10cfb9782d04-worker/gate
+ok treehouse: ~/.treehouse unchanged
+ready: /tmp/fmlab-xargs.972162

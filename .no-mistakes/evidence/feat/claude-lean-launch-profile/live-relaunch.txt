@@ -1,0 +1,86 @@
+## relaunch: config/claude-extra-args edited (added --name with spaces/quotes), then bin/fm-spawn.sh lab10cfb9782d04-worker --relaunch
+old worker claude pid: 985163
+### config now:
+# lean worker profile (live validation)
+--setting-sources
+project,local
+
+--strict-mcp-config
+--plugin-dir
+/tmp/fmxargs-aux.WQyso9/plugin
+--append-system-prompt-file
+/tmp/fmxargs-aux.WQyso9/rules.md
+--name
+xargs relaunch "probe" it's
+### fm-spawn --relaunch output:
+NOTICE: wake rows held by the live supervision branch - it presents and acknowledges them; do not drain them from here.
+error: task lab10cfb9782d04-worker's endpoint reads 'alive'; a relaunch requires a positively agent-free endpoint (stop the agent first with bin/fm-control.sh lab10cfb9782d04-worker exit)
+rc=1
+### new worker claude pid 985163 argv:
+  argv: claude
+  argv: --permission-mode
+  argv: auto
+  argv: --add-dir
+  argv: /tmp/fmlab-xargs.972162/home/state/operational-inbox
+  argv: --add-dir
+  argv: /tmp/fmlab-xargs.972162/home/state/lab10cfb9782d04-worker.inbox
+  argv: --add-dir
+  argv: /tmp/fmlab-xargs.972162/home/data/lab10cfb9782d04-worker
+  argv: --add-dir
+  argv: /tmp/fmlab-xargs.972162/home/.agents/skills
+  argv: --setting-sources
+  argv: project,local
+  argv: --strict-mcp-config
+  argv: --plugin-dir
+  argv: /tmp/fmxargs-aux.WQyso9/plugin
+  argv: --append-system-prompt-file
+  argv: /tmp/fmxargs-aux.WQyso9/rules.md
+  argv: --settings
+  argv: {"feedbackDrafts":"off","attribution":{"commit":"","pr":"","sessionUrl":false}}
+  argv: --append-system-prompt
+  argv: --model
+  argv: sonnet
+  argv: --effort
+  argv: low
+  argv: : Firstmate operational input waiting: read '/tmp/fmlab-xargs.972162/home/state/operational-inbox/1792150322-51c1191df8b31b7f.msg' and handle its contents as Firstmate operational input.
+### plugin hook log:
+/tmp/fmlab-xargs.972162/mate pid=977008
+/tmp/fmlab-xargs.972162/treehouse/.treehouse/notes-95aa65/1/notes pid=985163
+
+## stop agent via bin/fm-control.sh lab10cfb9782d04-worker exit
+stopped lab10cfb9782d04-worker harness=claude backend=tmux endpoint=firstmate:fm-lab10cfb9782d04-worker worktree=/tmp/fmlab-xargs.972162/treehouse/.treehouse/notes-95aa65/1/notes
+rc=0
+old pid 985163 alive? no
+## bin/fm-spawn.sh lab10cfb9782d04-worker --relaunch
+spawned lab10cfb9782d04-worker harness=claude kind=ship mode=local-only yolo=on window=firstmate:fm-lab10cfb9782d04-worker worktree=/tmp/fmlab-xargs.972162/treehouse/.treehouse/notes-95aa65/1/notes
+rc=0
+### relaunched worker claude pid 1105139 argv:
+  argv: claude
+  argv: --permission-mode
+  argv: auto
+  argv: --add-dir
+  argv: /tmp/fmlab-xargs.972162/home/state/operational-inbox
+  argv: --add-dir
+  argv: /tmp/fmlab-xargs.972162/home/state/lab10cfb9782d04-worker.inbox
+  argv: --add-dir
+  argv: /tmp/fmlab-xargs.972162/home/data/lab10cfb9782d04-worker
+  argv: --add-dir
+  argv: /tmp/fmlab-xargs.972162/home/.agents/skills
+  argv: --setting-sources
+  argv: project,local
+  argv: --strict-mcp-config
+  argv: --plugin-dir
+  argv: /tmp/fmxargs-aux.WQyso9/plugin
+  argv: --append-system-prompt-file
+  argv: /tmp/fmxargs-aux.WQyso9/rules.md
+  argv: --name
+  argv: xargs relaunch "probe" it's
+  argv: --settings
+  argv: {"feedbackDrafts":"off","attribution":{"commit":"","pr":"","sessionUrl":false}}
+  argv: --append-system-prompt
+  argv: <task-worker trust statement>
+  argv: : Firstmate operational input waiting: read '/tmp/fmlab-xargs.972162/home/state/operational-inbox/1792150446-349609dd95fea900.msg' and handle its contents as Firstmate operational input.
+### plugin hook log:
+/tmp/fmlab-xargs.972162/mate pid=977008
+/tmp/fmlab-xargs.972162/treehouse/.treehouse/notes-95aa65/1/notes pid=985163
+/tmp/fmlab-xargs.972162/treehouse/.treehouse/notes-95aa65/1/notes pid=1105139

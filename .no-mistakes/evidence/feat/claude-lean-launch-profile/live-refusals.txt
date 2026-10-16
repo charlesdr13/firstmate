@@ -1,0 +1,73 @@
+## refusal guards, live: bin/fm-spawn.sh ship spawn of labxargs-refuse in the lab home with a bad config/claude-extra-args
+### case: --settings flag (harness=claude)
+file: 0000000 - - s e t t i n g s \n { } \n|0000016|
+rc=1
+error: config/claude-extra-args must hold one Claude argument per line without control bytes, and may not set --settings, --permission-mode, or --dangerously-skip-permissions (Firstmate owns --settings; config/claude-permission-mode owns the permission flag)
+state/labxargs-refuse.meta exists: no
+tmux windows: lab fm-lab10cfb9782d04-mate fm-lab10cfb9782d04-worker main 
+treehouse slots: 1 treehouse-state.json treehouse-state.key treehouse-state.lock 
+
+### case: --settings= form (harness=claude)
+file: 0000000 - - s e t t i n g s = { } \n|0000016|
+rc=1
+error: config/claude-extra-args must hold one Claude argument per line without control bytes, and may not set --settings, --permission-mode, or --dangerously-skip-permissions (Firstmate owns --settings; config/claude-permission-mode owns the permission flag)
+state/labxargs-refuse.meta exists: no
+tmux windows: lab fm-lab10cfb9782d04-mate fm-lab10cfb9782d04-worker main 
+treehouse slots: 1 treehouse-state.json treehouse-state.key treehouse-state.lock 
+
+### case: --permission-mode (harness=claude)
+file: 0000000 - - p e r m i s s i o n - m o d|0000020 e \n a u t o \n|0000027|
+rc=1
+error: config/claude-extra-args must hold one Claude argument per line without control bytes, and may not set --settings, --permission-mode, or --dangerously-skip-permissions (Firstmate owns --settings; config/claude-permission-mode owns the permission flag)
+state/labxargs-refuse.meta exists: no
+tmux windows: lab fm-lab10cfb9782d04-mate fm-lab10cfb9782d04-worker main 
+treehouse slots: 1 treehouse-state.json treehouse-state.key treehouse-state.lock 
+
+### case: --dangerously-skip-permissions (harness=claude)
+file: 0000000 - - d a n g e r o u s l y - s k|0000020 i p - p e r m i s s i o n s \n|0000037|
+rc=1
+error: config/claude-extra-args must hold one Claude argument per line without control bytes, and may not set --settings, --permission-mode, or --dangerously-skip-permissions (Firstmate owns --settings; config/claude-permission-mode owns the permission flag)
+state/labxargs-refuse.meta exists: no
+tmux windows: lab fm-lab10cfb9782d04-mate fm-lab10cfb9782d04-worker main 
+treehouse slots: 1 treehouse-state.json treehouse-state.key treehouse-state.lock 
+
+### case: control byte (TAB) in a value (harness=claude)
+file: 0000000 - - n a m e \n b a d \t v a l u e|0000020 \n|0000021|
+rc=1
+error: config/claude-extra-args must hold one Claude argument per line without control bytes, and may not set --settings, --permission-mode, or --dangerously-skip-permissions (Firstmate owns --settings; config/claude-permission-mode owns the permission flag)
+state/labxargs-refuse.meta exists: no
+tmux windows: lab fm-lab10cfb9782d04-mate fm-lab10cfb9782d04-worker main 
+treehouse slots: 1 treehouse-state.json treehouse-state.key treehouse-state.lock 
+
+### case: control byte (ESC) in a value (harness=claude)
+file: 0000000 - - n a m e \n b a d 033 [ 3 1 m r|0000020 e d \n|0000023|
+rc=1
+error: config/claude-extra-args must hold one Claude argument per line without control bytes, and may not set --settings, --permission-mode, or --dangerously-skip-permissions (Firstmate owns --settings; config/claude-permission-mode owns the permission flag)
+state/labxargs-refuse.meta exists: no
+tmux windows: lab fm-lab10cfb9782d04-mate fm-lab10cfb9782d04-worker main 
+treehouse slots: 1 treehouse-state.json treehouse-state.key treehouse-state.lock 
+
+### case: nonregular (directory) (harness=claude)
+file: <directory>
+rc=1
+error: config/claude-extra-args must be a readable regular file
+state/labxargs-refuse.meta exists: no
+tmux windows: lab fm-lab10cfb9782d04-mate fm-lab10cfb9782d04-worker main 
+treehouse slots: 1 treehouse-state.json treehouse-state.key treehouse-state.lock 
+
+### case: unreadable file (harness=claude)
+file: <unreadable mode 000>
+rc=1
+error: config/claude-extra-args must be a readable regular file
+state/labxargs-refuse.meta exists: no
+tmux windows: lab fm-lab10cfb9782d04-mate fm-lab10cfb9782d04-worker main 
+treehouse slots: 1 treehouse-state.json treehouse-state.key treehouse-state.lock 
+
+### case: --settings with a non-claude harness (harness=codex)
+file: 0000000 - - s e t t i n g s \n { } \n|0000016|
+rc=1
+error: config/claude-extra-args must hold one Claude argument per line without control bytes, and may not set --settings, --permission-mode, or --dangerously-skip-permissions (Firstmate owns --settings; config/claude-permission-mode owns the permission flag)
+state/labxargs-refuse.meta exists: no
+tmux windows: lab fm-lab10cfb9782d04-mate fm-lab10cfb9782d04-worker main 
+treehouse slots: 1 treehouse-state.json treehouse-state.key treehouse-state.lock 
+
