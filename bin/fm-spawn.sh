@@ -403,21 +403,10 @@
 #   on every spawn and relaunch, so a change reaches the next launch without a
 #   restart, and it is inherited into secondmate homes (bin/fm-config-inherit-lib.sh).
 # Claude extra arguments (config/claude-extra-args):
-#   Opt-in. Absent leaves every claude launch byte-identical. A present readable
-#   regular file holds one Claude Code CLI argument per line (blank lines and
-#   lines beginning with # are ignored); each argument is shell-quoted and
-#   inserted after the --add-dir grant on every claude launch (ship, scout,
-#   secondmate, and relaunch), for example a lean profile:
-#     --setting-sources
-#     project,local
-#     --strict-mcp-config
-#     --plugin-dir
-#     /abs/path/to/plugin
-#   --settings, --permission-mode and --dangerously-skip-permissions refuse,
-#   because Firstmate owns the one --settings value and
-#   config/claude-permission-mode owns the permission flag; a control byte or
-#   an unreadable file refuses too, all before any endpoint, worktree, or record
-#   exists. Read on every spawn and relaunch, and inherited into secondmate homes.
+#   docs/configuration.md "Claude extra arguments" owns the file format, the
+#   refused flags, and the operator contract. Absent leaves every claude launch
+#   byte-identical; __CLAUDEEXTRAARGS__ below carries the quoted arguments, and
+#   every refusal happens before any endpoint, worktree, or record exists.
 # Worker tool exclusions:
 #   docs/configuration.md "Worker tool exclusions" owns config/crew-exclude-tools
 #   and its operator contract. Resolve it with bin/fm-exclude-tools-lib.sh
