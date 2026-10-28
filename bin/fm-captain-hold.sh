@@ -1147,19 +1147,26 @@ fleet_data_dirs() {
 # open captain hold in the fleet: a captain-kind row that is not done, whether
 # held, snoozed by a future --until, or lapsed past its --until. Only a hold
 # still snoozed by its --until is "snoozed"; the refs are the GitHub PR or
-# issue URLs anywhere in the row, reason decoded.
+# issue URLs anywhere in the row, reason decoded, except the trailing
+# "Over cap:" line command_hold appends, which is not part of the ask.
 fleet_open_captain_holds() {
-  local dir listing file
+  local dir listing file status
   fleet_data_dirs | while IFS= read -r dir; do
     file=$(fm_backlog_file "$dir") || continue
-    [ -e "$file" ] || [ -f "$dir/../.tasks.toml" ] || continue
-    if ! listing=$(fm_backlog_row_list "$dir" --fields hold_kind,hold_reason,hold_until,held --limit 100000); then
+    status=0
+    fm_backlog_source_present "$dir" "$dir" || status=$?
+    # Status 1 with no markdown backlog and no tasks-axi config: no backlog here.
+    if [ "$status" -eq 1 ] && [ ! -e "$file" ] && [ ! -L "$file" ] && [ ! -e "${dir%/*}/.tasks.toml" ]; then
+      continue
+    fi
+    if [ "$status" -ne 0 ] \
+      || ! listing=$(fm_backlog_row_list "$dir" --fields hold_kind,hold_reason,hold_until,held --limit 100000); then
       printf 'fm-captain-hold: warning: skipped unreadable backlog %s in the fleet hold check\n' "$file" >&2
       continue
     fi
     printf '%s\n' "$listing" | fm_hold_reason_decode_stream toon | FM_GITHUB_REF_RE=$FM_GITHUB_REF_RE perl -e '
       my $file = shift;
-      my ($id, $state, $kind, $until, $held);
+      my ($id, $state, $kind, $reason, $until, $held);
       while (my $line = <STDIN>) {
         chomp $line;
         if ($line =~ /^tasks\[\d+\]\{([^}]*)\}:$/) {
@@ -1168,6 +1175,7 @@ fleet_open_captain_holds() {
             $id = $i if $names[$i] eq "id";
             $state = $i if $names[$i] eq "state";
             $kind = $i if $names[$i] eq "hold_kind";
+            $reason = $i if $names[$i] eq "hold_reason";
             $until = $i if $names[$i] eq "hold_until";
             $held = $i if $names[$i] eq "held";
           }
@@ -1177,8 +1185,10 @@ fleet_open_captain_holds() {
         my @f = $1 =~ /("(?:[^"\\]|\\.)*"|[^,]+)/g;
         next unless ($f[$kind] // "") eq "captain" && ($f[$state] // "") ne "done";
         my $snoozed = ($f[$held] // "") eq "yes" && ($f[$until] // "") =~ /^\d{4}-\d\d-\d\d$/;
+        $f[$reason] =~ s/\\nOver cap: (?:[^"\\]|\\.)*(?="\z)// if defined($reason) && defined($f[$reason]);
+        my $scan = join ",", @f;
         my (%seen, @refs);
-        while ($line =~ /$ENV{FM_GITHUB_REF_RE}/gi) { my $r = lc "$1#$2"; push @refs, $r unless $seen{$r}++ }
+        while ($scan =~ /$ENV{FM_GITHUB_REF_RE}/gi) { my $r = lc "$1#$2"; push @refs, $r unless $seen{$r}++ }
         print "$file\t$f[$id]\t", ($snoozed ? "snoozed" : "live"), "\t @refs \n";
       }
     ' "$file"

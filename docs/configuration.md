@@ -493,7 +493,7 @@ An urgent ask past the cap goes through with `--over-cap "<why this cannot wait>
 An open captain hold is any captain hold that is not done, the same rule `open` uses: held now, snoozed by a future `--until`, or lapsed past its `--until`, which is still an answerable call.
 `dedupe` checks every open captain hold and matches only full `github.com/<owner>/<repo>/(pull|issues)/<n>` URLs, so a bare `owner/repo#n` or `PR #n` is not matched.
 `cap` counts only live captain holds, those with no `--until` or a lapsed one, so a hold the captain snoozed to a future date does not count.
-Only the ask itself is checked, never the `--over-cap` text.
+Only the ask itself is checked, never the `--over-cap` text, and `dedupe` likewise ignores the `Over cap:` line saved on an existing hold.
 Re-holding a task that is already an open captain hold skips `dedupe` and `cap`, so a retry or a `--until` deferral never trips them; `require-rec` applies to every hold.
 `cap` is unset unless the file names it.
 

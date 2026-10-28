@@ -740,11 +740,15 @@ test_hold_ask_guard_refuses_bad_asks() {
   run_captain "$root" hold r-one --reason "Rotate the key today? Rec: yes, because it leaked" >/dev/null 2>"$err" \
     || fail "guard: re-holding an active hold at the cap was refused: $(cat "$err")"
   run_captain "$root" hold r-cap --title "Cap" --reason "Pay the invoice? Rec: yes, because due" \
-    --over-cap "client send blocked today https://github.com/Acme/widgets/pull/26" >/dev/null 2>"$err" \
+    --over-cap "client send blocked today https://github.com/Acme/billing/pull/7" >/dev/null 2>"$err" \
     || fail "guard: --over-cap did not let an urgent ask through: $(cat "$err")"
   run_captain "$root" open r-cap >/dev/null 2>&1 || fail "guard: the over-cap ask is not an open captain call"
-  tasks_in "$root" show r-cap --full | fm_hold_reason_decode_stream toon | grep -qF 'Over cap: client send blocked today https://github.com/Acme/widgets/pull/26' \
+  tasks_in "$root" show r-cap --full | fm_hold_reason_decode_stream toon | grep -qF 'Over cap: client send blocked today https://github.com/Acme/billing/pull/7' \
     || fail "guard: the over-cap reason was not recorded on the hold"
+  # r-cap cites billing#7 only in its Over cap: line, which is not its ask.
+  run_captain "$root" hold r-billing --title "Billing 7" --over-cap "urgent" \
+    --reason "Merge https://github.com/acme/billing/pull/7? Rec: yes, because green" >/dev/null 2>"$err" \
+    || fail "guard: a hold's --over-cap text blocked a later ask about the PR it cited: $(cat "$err")"
 
   printf 'cap 3\n' >> "$root/config/captain-hold-guard"
   if run_captain "$root" hold r-bad --title "Bad config" --reason "Ok? Rec: yes" >/dev/null 2>"$err"; then
@@ -753,6 +757,45 @@ test_hold_ask_guard_refuses_bad_asks() {
   grep -qF 'config/captain-hold-guard line 7: cap is set twice' "$err" \
     || fail "guard: the malformed-config refusal did not name the line: $(cat "$err")"
   pass "captain-hold ask guard is off by default and refuses no-Rec, duplicate-PR and over-cap asks when configured"
+}
+
+# A fleet home whose backend comes from the user's tasks-axi config keeps no
+# data/backlog.md or .tasks.toml, yet its captain holds still count. The stubbed
+# tasks-axi fakes that home's listing; every other call reaches the real one.
+test_hold_ask_guard_reads_a_user_configured_backend_home() {
+  local root ext user err
+  root=$(make_home guard-cfg-root)
+  ext="$TMP_ROOT/guard-cfg-ext"
+  user="$TMP_ROOT/guard-cfg-user"
+  err="$root/guard.err"
+  mkdir -p "$ext/data" "$user/.tasks-axi" "$TMP_ROOT/guard-cfg-empty/data"
+  ext=$(cd "$ext" && pwd -P)
+
+  printf 'dedupe\nfleet-data %s/data\n' "$TMP_ROOT/guard-cfg-empty" > "$root/config/captain-hold-guard"
+  run_captain "$root" hold r-empty --title "Empty fleet dir" \
+    --reason "Merge https://github.com/acme/ledger/pull/5? Rec: yes" >/dev/null 2>"$err" \
+    || fail "guard: a fleet directory with no backlog refused a hold: $(cat "$err")"
+  assert_no_grep 'warning' "$err" "guard: a fleet directory with no backlog was reported"
+
+  printf 'backend = "beads"\n' > "$user/.tasks-axi/config.toml"
+  cat > "$root/fakebin/tasks-axi" <<SH
+#!/usr/bin/env bash
+if [ "\${1:-}" = list ] && [ "\$(pwd -P)" = "$ext" ]; then
+  printf '%s\n' 'count: 1' 'tasks[1]{id,state,kind,repo,title,hold_kind,hold_reason,hold_until,held}:' \
+    '  ext-pr,queued,task,"-",Ledger,captain,"merge https://github.com/acme/ledger/pull/6","-",yes'
+  exit 0
+fi
+exec "\$REAL_TASKS_AXI" "\$@"
+SH
+  chmod +x "$root/fakebin/tasks-axi"
+  printf 'dedupe\nfleet-data %s/data\n' "$ext" > "$root/config/captain-hold-guard"
+  if HOME="$user" run_captain "$root" hold r-dup --title "Dup" \
+    --reason "Merge https://github.com/acme/ledger/pull/6? Rec: yes" >/dev/null 2>"$err"; then
+    fail "guard: a PR cited by a hold in a user-configured backend home was accepted"
+  fi
+  grep -qF "refused: acme/ledger#6 is already cited by open captain hold ext-pr in $ext/data/backlog.md" "$err" \
+    || fail "guard: the user-configured backend home was not read: $(cat "$err")"
+  pass "captain-hold ask guard reads a home whose backend comes from the user's tasks-axi config"
 }
 
 # A Beads workspace with due.required and no types.custom captain type is the
@@ -4938,3 +4981,4 @@ test_hold_creates_a_captain_row_when_beads_requires_due_without_custom_type
 test_archived_answered_hold_still_satisfies_the_gate
 test_archived_answer_in_a_user_configured_archive_satisfies_the_gate
 test_hold_ask_guard_refuses_bad_asks
+test_hold_ask_guard_reads_a_user_configured_backend_home
