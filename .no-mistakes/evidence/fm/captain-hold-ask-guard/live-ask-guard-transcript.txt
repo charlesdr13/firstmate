@@ -1,0 +1,147 @@
+
+=== 1. guard off by default: a reason with no Rec is accepted
+$ FM_HOME=primary fm-captain-hold.sh hold p-off --title Guard\ off --reason what\ now\? 
+p-off
+[exit 0]
+
+=== 2. fleet: register mate as a local secondmate of primary; configure the guard on primary only
+# lab guard
+require-rec
+dedupe
+fleet-data /tmp/fm-lab.khvgG5/worklog/data  # work log
+
+=== 3. inheritance: the primary's config/captain-hold-guard propagates to the secondmate home
+mate config/captain-hold-guard == primary's
+
+=== 4. require-rec: an ask with no Rec is refused and creates no task
+$ FM_HOME=primary fm-captain-hold.sh hold p-norec --title No\ rec --reason what\ do\ you\ want\ to\ do\ here\? 
+fm-captain-hold: refused: the reason has no recommendation; end it with "Rec: <pick>, because <reason>" and file again
+[exit 1]
+task p-norec: absent
+
+=== 4b. Recommend: form is accepted
+$ FM_HOME=primary fm-captain-hold.sh hold p-rec --title Rotate --reason Rotate\ the\ key\?\ Recommend:\ yes\,\ because\ it\ leaked 
+p-rec
+[exit 0]
+
+=== 5. dedupe across the fleet: mate files a hold on a PR, primary then asks about the same PR
+$ FM_HOME=mate fm-captain-hold.sh hold m-pr --title Merge\ widgets\ 26 --reason Merge\ https://github.com/Acme/widgets/pull/26\?\ Rec:\ yes\,\ because\ green 
+m-pr
+[exit 0]
+$ FM_HOME=primary fm-captain-hold.sh hold p-dup --title Dup --reason Merge\ https://github.com/acme/WIDGETS/issues/26\ now\?\ Rec:\ yes\,\ because\ green 
+fm-captain-hold: refused: acme/widgets#26 is already cited by open captain hold m-pr in /tmp/fm-lab.khvgG5/mate/data/backlog.md; add this ask to that hold instead of filing a second one
+[exit 1]
+task p-dup: absent
+
+=== 5b. the same PR via the fleet-data work log (hold filed there with tasks-axi directly)
+$ FM_HOME=mate fm-captain-hold.sh hold m-dup --title Dup --reason Ship\ https://github.com/Acme/dashboard/pull/203\?\ Rec:\ yes\,\ because\ green 
+fm-captain-hold: refused: acme/dashboard#203 is already cited by open captain hold w-pr in /tmp/fm-lab.khvgG5/worklog/data/backlog.md; add this ask to that hold instead of filing a second one
+[exit 1]
+
+=== 5c. re-holding the hold that already cites the PR is allowed
+$ FM_HOME=mate fm-captain-hold.sh hold m-pr --reason Still\ merge\ https://github.com/Acme/widgets/pull/26\?\ Rec:\ yes\,\ because\ green 
+m-pr
+[exit 0]
+
+=== 5d. a bare owner/repo#n is not a URL, so it is not matched (documented)
+$ FM_HOME=primary fm-captain-hold.sh hold p-bare --title Bare --reason Merge\ acme/widgets#26\?\ Rec:\ yes\,\ because\ green 
+p-bare
+[exit 0]
+
+=== 6. cap: live = no --until or lapsed --until; a future --until snooze does not count
+tasks-axi --state held in primary (lapsed one is omitted by tasks-axi itself):
+count: 4
+tasks[4]{id,state,kind,repo,title,hold_kind,hold_until,held}:
+  p-off,queued,captain,firstmate,Guard off,captain,"-",yes
+  p-rec,queued,captain,firstmate,Rotate,captain,"-",yes
+  p-bare,queued,captain,firstmate,Bare,captain,"-",yes
+  p-snooze,queued,task,sample,Snoozed,captain,2099-01-01,yes
+help[1]:
+  - Run `tasks-axi show <id>` for full notes on a task
+live fleet captain holds: p-off p-rec p-bare p-lapsed (primary), m-pr (mate), w-pr (worklog) = 6; p-snooze snoozed
+$ FM_HOME=primary fm-captain-hold.sh hold p-cap --title Cap --reason Pay\ the\ invoice\?\ Rec:\ yes\,\ because\ due 
+fm-captain-hold: refused: 6 live captain holds fleet-wide (cap 6); drop or merge stale holds first, or pass --over-cap "<why this cannot wait>" for an urgent ask
+[exit 1]
+task p-cap: absent
+
+=== 6b. raise cap to 7: snoozed hold is not counted, so a 7th live hold goes through
+$ FM_HOME=primary fm-captain-hold.sh hold p-cap --title Cap --reason Pay\ the\ invoice\?\ Rec:\ yes\,\ because\ due 
+p-cap
+[exit 0]
+
+=== 6c. dedupe sees the lapsed hold (tasks-axi --state held omits it)
+$ FM_HOME=primary fm-captain-hold.sh hold p-lapdup --title Lapsed\ dup --over-cap urgent --reason Merge\ https://github.com/acme/api/pull/9\?\ Rec:\ yes\,\ because\ green 
+fm-captain-hold: refused: acme/api#9 is already cited by open captain hold p-lapsed in /tmp/fm-lab.khvgG5/primary/data/backlog.md; add this ask to that hold instead of filing a second one
+[exit 1]
+
+=== 6d. re-holding an open hold at the cap is allowed (lapsed one and active one)
+$ FM_HOME=primary fm-captain-hold.sh hold p-lapsed --reason merge\ https://github.com/acme/api/pull/9\ today\?\ Rec:\ yes 
+p-lapsed
+[exit 0]
+$ FM_HOME=primary fm-captain-hold.sh hold p-rec --reason Rotate\ the\ key\ today\?\ Rec:\ yes\,\ because\ it\ leaked 
+p-rec
+[exit 0]
+
+=== 7. adversarial: --over-cap text cannot stand in for the ask's Rec or trip dedupe
+$ FM_HOME=primary fm-captain-hold.sh hold p-urgent --title Urgent --reason Pay\ the\ invoice\? --over-cap rec:\ https://github.com/acme/widgets/pull/26 
+fm-captain-hold: refused: the reason has no recommendation; end it with "Rec: <pick>, because <reason>" and file again
+[exit 1]
+task p-urgent: absent
+
+=== 7b. --over-cap lets an urgent ask past the cap and is recorded as an Over cap: line
+$ FM_HOME=primary fm-captain-hold.sh hold p-urgent --title Urgent --reason Pay\ vendor\ today\?\ Rec:\ yes\,\ because\ service\ cuts\ off --over-cap vendor\ cuts\ service\ tonight\,\ see\ https://github.com/acme/widgets/pull/26 
+p-urgent
+[exit 0]
+15:- [ ] p-urgent - Urgent (repo: firstmate) (kind: captain) (since 2026-10-28) (hold: fm-hold-v1:UGF5IHZlbmRvciB0b2RheT8gUmVjOiB5ZXMsIGJlY2F1c2Ugc2VydmljZSBjdXRzIG9mZgpPdmVyIGNhcDogdmVuZG9yIGN1dHMgc2VydmljZSB0b25pZ2h0LCBzZWUgaHR0cHM6Ly9naXRodWIuY29tL2FjbWUvd2lkZ2V0cy9wdWxsLzI2) (hold-kind: captain)
+16-  Captain hold set: 2026-10-28T08:05:57Z
+17-## Done
+  hold_reason: "Pay vendor today? Rec: yes, because service cuts off\nOver cap: vendor cuts service tonight, see https://github.com/acme/widgets/pull/26"
+
+=== 7c. empty --over-cap is refused
+$ FM_HOME=primary fm-captain-hold.sh hold p-x --title X --reason Ok\?\ Rec:\ yes --over-cap '' 
+fm-captain-hold: --over-cap needs the reason this ask cannot wait
+[exit 1]
+
+=== 8. the secondmate, under its inherited guard, is refused at the fleet cap too
+$ FM_HOME=mate fm-captain-hold.sh hold m-cap --title Mate\ cap --reason Bump\ the\ dep\?\ Rec:\ yes\,\ because\ CVE 
+fm-captain-hold: refused: 8 live captain holds fleet-wide (cap 6); drop or merge stale holds first, or pass --over-cap "<why this cannot wait>" for an urgent ask
+[exit 1]
+
+=== 9. adversarial: an unreadable fleet backlog is warned about and skipped, not blocking
+$ FM_HOME=primary fm-captain-hold.sh hold p-more --title More --over-cap urgent --reason Ship\ it\?\ Rec:\ yes\,\ because\ green 
+fm-captain-hold: warning: skipped unreadable backlog /tmp/fm-lab.khvgG5/broken/data/backlog.md in the fleet hold check
+p-more
+[exit 0]
+
+=== 10. malformed config refuses every hold and names the line
+$ FM_HOME=primary fm-captain-hold.sh hold p-bad --title Bad --reason Ok\?\ Rec:\ yes 
+fm-captain-hold: config/captain-hold-guard line 7: cap is set twice
+[exit 1]
+$ FM_HOME=primary fm-captain-hold.sh hold p-bad --title Bad --reason Ok\?\ Rec:\ yes 
+fm-captain-hold: config/captain-hold-guard line 2: cap needs a positive integer
+[exit 1]
+$ FM_HOME=primary fm-captain-hold.sh hold p-bad --title Bad --reason Ok\?\ Rec:\ yes 
+fm-captain-hold: config/captain-hold-guard line 1: unknown setting: requre-rec
+[exit 1]
+task p-bad: absent
+
+=== final primary backlog
+## In flight
+
+## Queued
+- [ ] p-off - Guard off (repo: firstmate) (kind: captain) (since 2026-10-28) (hold: fm-hold-v1:d2hhdCBub3c/) (hold-kind: captain)
+  Captain hold set: 2026-10-28T08:05:45Z
+- [ ] p-rec - Rotate (repo: firstmate) (kind: captain) (since 2026-10-28) (hold: fm-hold-v1:Um90YXRlIHRoZSBrZXkgdG9kYXk/IFJlYzogeWVzLCBiZWNhdXNlIGl0IGxlYWtlZA==) (hold-kind: captain)
+  Captain hold set: 2026-10-28T08:05:46Z
+- [ ] p-bare - Bare (repo: firstmate) (kind: captain) (since 2026-10-28) (hold: fm-hold-v1:TWVyZ2UgYWNtZS93aWRnZXRzIzI2PyBSZWM6IHllcywgYmVjYXVzZSBncmVlbg==) (hold-kind: captain)
+  Captain hold set: 2026-10-28T08:05:51Z
+- [ ] p-snooze - Snoozed (repo: sample) (since 2026-10-28) (hold: later Rec: wait) (hold-kind: captain) (hold-until: 2099-01-01)
+- [ ] p-lapsed - Lapsed (repo: sample) (since 2026-10-28) (hold: fm-hold-v1:bWVyZ2UgaHR0cHM6Ly9naXRodWIuY29tL2FjbWUvYXBpL3B1bGwvOSB0b2RheT8gUmVjOiB5ZXM=) (hold-kind: captain)
+  Captain hold set: 2026-10-28T08:05:55Z
+- [ ] p-cap - Cap (repo: firstmate) (kind: captain) (since 2026-10-28) (hold: fm-hold-v1:UGF5IHRoZSBpbnZvaWNlPyBSZWM6IHllcywgYmVjYXVzZSBkdWU=) (hold-kind: captain)
+  Captain hold set: 2026-10-28T08:05:53Z
+- [ ] p-urgent - Urgent (repo: firstmate) (kind: captain) (since 2026-10-28) (hold: fm-hold-v1:UGF5IHZlbmRvciB0b2RheT8gUmVjOiB5ZXMsIGJlY2F1c2Ugc2VydmljZSBjdXRzIG9mZgpPdmVyIGNhcDogdmVuZG9yIGN1dHMgc2VydmljZSB0b25pZ2h0LCBzZWUgaHR0cHM6Ly9naXRodWIuY29tL2FjbWUvd2lkZ2V0cy9wdWxsLzI2) (hold-kind: captain)
+  Captain hold set: 2026-10-28T08:05:57Z
+- [ ] p-more - More (repo: firstmate) (kind: captain) (since 2026-10-28) (hold: fm-hold-v1:U2hpcCBpdD8gUmVjOiB5ZXMsIGJlY2F1c2UgZ3JlZW4KT3ZlciBjYXA6IHVyZ2VudA==) (hold-kind: captain)
+  Captain hold set: 2026-10-28T08:05:59Z
+## Done

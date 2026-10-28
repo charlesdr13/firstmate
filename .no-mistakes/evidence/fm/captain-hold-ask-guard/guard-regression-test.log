@@ -1,0 +1,2 @@
+ok - cleanup preserves every byte of a retained body's non-ASCII characters
+ok - captain-hold ask guard is off by default and refuses no-Rec, duplicate-PR and over-cap asks when configured
