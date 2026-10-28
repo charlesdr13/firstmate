@@ -1,0 +1,60 @@
+
+
+❯ Second, separate task for project demo: build a large backend feature, a new REST API server with auth and a database layer. Mode local-only. Same as before: full intake including
+  config/crew-dispatch.json, scaffold with bin/fm-brief.sh under task id backend-api, fill both sections, do NOT spawn, reply with the brief path.
+
+  Searched for 2 patterns, ran 2 shell commands
+
+● Update(/tmp/fm-lab.0L7Iut/data/backlog.md)
+  ⎿  File must be read first
+
+● Brief is filled; adding the backlog entry now.
+
+  Read 1 file
+
+● Update(/tmp/fm-lab.0L7Iut/data/backlog.md)
+  ⎿  Added 2 lines
+       6
+       7  - [ ] fix-readme-typo: demo - fix the typo 'teh' in README.md
+       8    mode=local-only yolo=off (captain named local-only; demo is unregistered, so yolo stays off). Dispatch: crew-dispatch rule "Small documentation or typo fixes" -> claude/sonnet/effor
+          t low, skills lg-pr-hygiene, charles-voice. Brief scaffolded; not yet spawned (captain asked to stop before spawning).
+       9 +- [ ] backend-api: demo - build a REST API server with auth and a database layer
+      10 +  mode=local-only yolo=off (captain named local-only; demo is unregistered, so yolo stays off). Dispatch: crew-dispatch rule "Large backend feature work" -> codex, harness default mod
+         +el; rule sets no effort, so fallback xhigh (open stack and design choices). Brief scaffolded; not yet spawned (captain asked to stop before spawning). Also edits README.md alongside f
+         +ix-readme-typo; independent, no need to serialize.
+      11
+      12  ## Done
+
+● Captain, the instructions for the backend API task are written. As with the first task, I stopped before launching a worker.
+
+  Brief path: /tmp/fm-lab.0L7Iut/data/backend-api/brief.md
+
+  - Your ask: "Build a large backend feature: a new REST API server with auth and a database layer." I added that demo holds only a one-line README today, so there's no existing code, language or
+    database to build on.
+  - Build instructions:
+    - The worker chooses the stack itself: plain, common options, with an embedded database such as SQLite so the server runs locally with nothing else installed. Each choice and its reason go in the
+      README.
+    - It must deliver a server you can run, with logins protecting the endpoints that need them, and a database layer the API reads and writes through.
+    - It must include tests for logins that should pass and logins that should be rejected, and for the database layer. The README gets the commands to install, run and test it.
+    - No secrets go in the code. Signing keys come from environment variables.
+    - Any paid or hosted service comes back to you as a decision instead of being added.
+    - Out of scope: deployment, CI, a frontend, and the typo fix.
+  - Worker choice: the automatic dispatch helper is still off, so I matched config/crew-dispatch.json by hand. It hit the "large backend feature work" rule, which picks codex. That rule names no model
+    or effort level, so the worker gets codex's default model at the highest normal effort level, because the design is wide open.
+  - Delivery: local-only. The worker commits on branch fm/backend-api and doesn't push. Merging needs your approval, since demo isn't registered. As before, the instructions tell the worker that
+    "main" means demo's master branch.
+  - Overlap: both tasks edit README.md. Each change can be built and checked separately, so they can still run in parallel.
+  - Backlog: I filed it as queued next to the typo fix. I wrote only to this home's private records and made no changes to the demo project.
+
+  Decisions for you:
+  1. Would you rather name the language, framework or database yourself? Recommended: let the worker choose, within the rules above.
+  2. Register demo in the project registry? Recommended: yes, as local-only with automatic merging off.
+  3. Launch workers on one or both tasks? Say "go" and I'll start them.
+
+✻ Worked for 43s · done 12:26 PM
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  Opus 5.5 (high) | ctx: 8% | 5h: 6% | 7d: 22%
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← 6 agents

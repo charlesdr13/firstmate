@@ -1,0 +1,44 @@
+=== rule with skills (verbose fact lists skills)
+config: {"rules":[{"when":"ui work","use":{"harness":"claude"},"skills":["frontend-design","lg-pr-hygiene"]},{"when":"backend","use":[{"harness":"codex"},{"harness":"claude"}]}],"default":{"harness":"codex"}}
+BOOTSTRAP_INFO: crew dispatch active config/crew-dispatch.json
+BOOTSTRAP_INFO: crew dispatch rule: ui work -> claude skills=frontend-design,lg-pr-hygiene
+BOOTSTRAP_INFO: crew dispatch rule: backend -> quota-balanced[codex, claude]
+BOOTSTRAP_INFO: crew dispatch default: codex
+exit-pipe: 0
+
+=== rule without skills (unchanged output)
+config: {"rules":[{"when":"backend","use":{"harness":"codex"}}]}
+BOOTSTRAP_INFO: crew dispatch active config/crew-dispatch.json
+BOOTSTRAP_INFO: crew dispatch rule: backend -> codex
+exit-pipe: 0
+
+=== skills as a string (rejected)
+config: {"rules":[{"when":"ui work","use":{"harness":"claude"},"skills":"frontend-design"}]}
+CREW_DISPATCH: invalid config/crew-dispatch.json - rule skills must be a non-empty array of skill names when present
+exit-pipe: 0
+
+=== skills empty array (rejected)
+config: {"rules":[{"when":"ui work","use":{"harness":"claude"},"skills":[]}]}
+CREW_DISPATCH: invalid config/crew-dispatch.json - rule skills must be a non-empty array of skill names when present
+exit-pipe: 0
+
+=== skills with empty name (rejected)
+config: {"rules":[{"when":"ui work","use":{"harness":"claude"},"skills":["a",""]}]}
+CREW_DISPATCH: invalid config/crew-dispatch.json - rule skills must be a non-empty array of skill names when present
+exit-pipe: 0
+
+=== skills with non-string entry (rejected)
+config: {"rules":[{"when":"ui work","use":{"harness":"claude"},"skills":["a",5]}]}
+CREW_DISPATCH: invalid config/crew-dispatch.json - rule skills must be a non-empty array of skill names when present
+exit-pipe: 0
+
+=== skills null (rejected)
+config: {"rules":[{"when":"ui work","use":{"harness":"claude"},"skills":null}]}
+CREW_DISPATCH: invalid config/crew-dispatch.json - rule skills must be a non-empty array of skill names when present
+exit-pipe: 0
+
+=== skills object (rejected)
+config: {"rules":[{"when":"ui work","use":{"harness":"claude"},"skills":{"a":1}}]}
+CREW_DISPATCH: invalid config/crew-dispatch.json - rule skills must be a non-empty array of skill names when present
+exit-pipe: 0
+

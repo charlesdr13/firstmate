@@ -1,0 +1,25 @@
+rules file (skills on every rule):
+{"when":"New feature work on the app.","skills":["lg-pr-hygiene","frontend-design"]}
+{"when":"The task generates images.","skills":["lg-pr-hygiene","frontend-design"]}
+{"when":"Genuinely very difficult design or planning work.","skills":["lg-pr-hygiene","frontend-design"]}
+{"when":"A simple bug fix with a stated root cause.","skills":["lg-pr-hygiene","frontend-design"]}
+exit=0
+dispatch-resolve:
+  status: clear
+  model: jev-1.13.0   latency_ms: 12   tokens: 812/60
+  rule: rule_4 (A simple bug fix with a stated root cause.)   confidence: 0.9
+  probabilities: rule_1=0.01 rule_2=0.01 rule_3=0.01 rule_4=0.96 default=0.01
+  note: rule matched
+  note: 1 eligible candidate(s) unranked (kimi)
+  candidate: claude:sonnet  provider=claude  scope=all_models  remaining=79%  spendPriority=-0.4627  runway=projected_exhaustion  -> eligible
+  candidate: cursor:cursor-grok-4.6-medium  provider=cursor  scope=all_models  remaining=91%  spendPriority=0.7597  runway=through_reset  -> eligible
+  candidate: kimi:kimi-code/k3  provider=kimi  -> eligible, unranked: provider kimi unmeasured (unknown): disclosed uncertainty
+  profile: --harness 'cursor' --model 'cursor-grok-4.6-medium'
+--- request body sent to provider mentions skills?
+0
+--- baseline without skills:
+DIFF
+3c3
+<   model: jev-1.13.0   latency_ms: 12   tokens: 812/60
+---
+>   model: jev-1.13.0   latency_ms: 11   tokens: 812/60
