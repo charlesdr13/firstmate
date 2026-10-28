@@ -483,14 +483,18 @@ Each line turns on one check, and blank lines and `#` comments are ignored:
 
 ```text
 require-rec          # every hold reason carries "Rec: <pick>, because <reason>" ("Recommend:" also counts)
-dedupe               # refuse a new hold citing a GitHub PR or issue that an open captain hold already cites
-cap 30               # refuse a new hold once the fleet has this many open captain holds
+dedupe               # refuse a new hold citing a GitHub PR or issue URL that an open captain hold already cites
+cap 30               # refuse a new hold once the fleet has this many live captain holds
 fleet-data ~/worklog/data   # repeatable: also read the backlog in this data directory
 ```
 
 A refused ask says how to fix it: the `dedupe` refusal names the open hold and backlog that already cite the PR or issue, so the new question is added to that hold instead.
 An urgent ask past the cap goes through with `--over-cap "<why this cannot wait>"`, which is recorded on the hold as an `Over cap:` line.
-Re-holding a task that is already an active captain hold skips `dedupe` and `cap`, so a retry or a `--until` deferral never trips them; `require-rec` applies to every hold.
+An open captain hold is any captain hold that is not done, the same rule `open` uses: held now, snoozed by a future `--until`, or lapsed past its `--until`, which is still an answerable call.
+`dedupe` checks every open captain hold and matches only full `github.com/<owner>/<repo>/(pull|issues)/<n>` URLs, so a bare `owner/repo#n` or `PR #n` is not matched.
+`cap` counts only live captain holds, those with no `--until` or a lapsed one, so a hold the captain snoozed to a future date does not count.
+Only the ask itself is checked, never the `--over-cap` text.
+Re-holding a task that is already an open captain hold skips `dedupe` and `cap`, so a retry or a `--until` deferral never trips them; `require-rec` applies to every hold.
 `cap` is unset unless the file names it.
 
 `dedupe` and `cap` count the whole fleet: this home, its local parent home, every local secondmate registered in the root home's `data/secondmates.md`, and each `fleet-data` directory, which takes an absolute or `~/` path.

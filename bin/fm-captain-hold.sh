@@ -59,8 +59,9 @@
 # card.
 # The optional, off-by-default config/captain-hold-guard makes `hold` refuse an
 # ask that breaks the advising rule: a reason with no `Rec:`, a new hold citing
-# a PR or issue another open captain hold already cites, or a new hold past the
-# fleet-wide cap without `--over-cap <why>` (see "ask guard" below).
+# a GitHub PR or issue URL another open captain hold already cites, or a new
+# hold past the fleet-wide cap on live captain holds without `--over-cap <why>`
+# (see "ask guard" below).
 #
 # `answer` records the captain's exact words and resolves the call in the same
 # act. It requires a non-empty captain decision file of at most 8192 bytes and
@@ -1059,8 +1060,13 @@ verify_entry_durable() {  # <origin-or-empty> <entry>; prints "<id> <how> <origi
 #
 # Off unless config/captain-hold-guard exists; docs/configuration.md "Captain-hold
 # ask guard" owns its format (require-rec, dedupe, cap <n>, fleet-data <dir>).
-# "New" means the task is not already an active captain hold, so re-holding one
-# skips dedupe and cap. The fleet is this home, its local parent home (or this
+# An open captain hold is any captain-kind row that is not done: held now,
+# snoozed by a future --until, or lapsed past its --until (still an answerable
+# call). `dedupe` matches full github.com/<owner>/<repo>/(pull|issues)/<n> URLs
+# across every open captain hold; `cap` counts only live ones, so a hold the
+# captain snoozed with a future --until does not count. "New" means the task is
+# not already an open captain hold, so re-holding one skips dedupe and cap, and
+# only the ask itself is checked, never its `--over-cap` text. The fleet is this home, its local parent home (or this
 # home when it is the root), every local secondmate registered in the root's
 # data/secondmates.md, and each fleet-data directory. A directory with no
 # backlog is skipped, and one that cannot be read is warned about and skipped,
@@ -1108,10 +1114,11 @@ reason_has_rec() {  # <reason>
   printf '%s\n' "$1" | grep -Eiq '(^|[^a-z])rec(ommend)?:[[:space:]]*[^[:space:]]'
 }
 
+FM_GITHUB_REF_RE='github\.com/([A-Za-z0-9._-]+/[A-Za-z0-9._-]+)/(?:pull|issues)/([0-9]+)'
+
 github_refs() {  # <text>; prints owner/repo#n (lowercase), one per line
-  printf '%s\n' "$1" \
-    | grep -Eio 'github\.com/[A-Za-z0-9._-]+/[A-Za-z0-9._-]+/(pull|issues)/[0-9]+' \
-    | sed -E 's#^github\.com/##; s#/(pull|issues)/#\##' | tr '[:upper:]' '[:lower:]' | LC_ALL=C sort -u
+  printf '%s\n' "$1" | FM_GITHUB_REF_RE=$FM_GITHUB_REF_RE perl -ne '
+    while (/$ENV{FM_GITHUB_REF_RE}/gi) { my $r = lc "$1#$2"; print "$r\n" unless $seen{$r}++ }'
 }
 
 fleet_data_dirs() {
@@ -1136,20 +1143,23 @@ fleet_data_dirs() {
   done | LC_ALL=C sort -u
 }
 
-# Prints "<backlog>\t<task-id>\t<row text with the reason decoded>" for every
-# open captain hold in the fleet.
+# Prints "<backlog>\t<task-id>\t<live|snoozed>\t <owner/repo#n> ... " for every
+# open captain hold in the fleet: a captain-kind row that is not done, whether
+# held, snoozed by a future --until, or lapsed past its --until. Only a hold
+# still snoozed by its --until is "snoozed"; the refs are the GitHub PR or
+# issue URLs anywhere in the row, reason decoded.
 fleet_open_captain_holds() {
   local dir listing file
   fleet_data_dirs | while IFS= read -r dir; do
     file=$(fm_backlog_file "$dir") || continue
     [ -e "$file" ] || [ -f "$dir/../.tasks.toml" ] || continue
-    if ! listing=$(fm_backlog_row_list "$dir" --state held --fields hold_kind,hold_reason --limit 100000); then
+    if ! listing=$(fm_backlog_row_list "$dir" --fields hold_kind,hold_reason,hold_until,held --limit 100000); then
       printf 'fm-captain-hold: warning: skipped unreadable backlog %s in the fleet hold check\n' "$file" >&2
       continue
     fi
-    printf '%s\n' "$listing" | fm_hold_reason_decode_stream toon | perl -e '
+    printf '%s\n' "$listing" | fm_hold_reason_decode_stream toon | FM_GITHUB_REF_RE=$FM_GITHUB_REF_RE perl -e '
       my $file = shift;
-      my ($id, $state, $kind);
+      my ($id, $state, $kind, $until, $held);
       while (my $line = <STDIN>) {
         chomp $line;
         if ($line =~ /^tasks\[\d+\]\{([^}]*)\}:$/) {
@@ -1158,14 +1168,18 @@ fleet_open_captain_holds() {
             $id = $i if $names[$i] eq "id";
             $state = $i if $names[$i] eq "state";
             $kind = $i if $names[$i] eq "hold_kind";
+            $until = $i if $names[$i] eq "hold_until";
+            $held = $i if $names[$i] eq "held";
           }
           next;
         }
         next unless defined($kind) && $line =~ /^  (.*)$/;
         my @f = $1 =~ /("(?:[^"\\]|\\.)*"|[^,]+)/g;
         next unless ($f[$kind] // "") eq "captain" && ($f[$state] // "") ne "done";
-        (my $text = $line) =~ s/\t/ /g;
-        print "$file\t$f[$id]\t$text\n";
+        my $snoozed = ($f[$held] // "") eq "yes" && ($f[$until] // "") =~ /^\d{4}-\d\d-\d\d$/;
+        my (%seen, @refs);
+        while ($line =~ /$ENV{FM_GITHUB_REF_RE}/gi) { my $r = lc "$1#$2"; push @refs, $r unless $seen{$r}++ }
+        print "$file\t$f[$id]\t", ($snoozed ? "snoozed" : "live"), "\t @refs \n";
       }
     ' "$file"
   done
@@ -1183,22 +1197,20 @@ guard_captain_ask() {  # <reason> <new-hold-0-or-1> <over-cap-why>
   if [ "$GUARD_DEDUPE" = 1 ]; then
     while IFS= read -r ref; do
       [ -n "$ref" ] || continue
-      hit=$(printf '%s\n' "$holds" | while IFS=$'\t' read -r file hid row; do
-        if github_refs "$row" | grep -qxF -- "$ref"; then printf '%s in %s\n' "$hid" "$file"; break; fi
-      done)
+      hit=$(printf '%s\n' "$holds" | awk -F'\t' -v ref=" $ref " 'index($4, ref) { print $2 " in " $1; exit }')
       [ -z "$hit" ] \
         || fail "refused: $ref is already cited by open captain hold $hit; add this ask to that hold instead of filing a second one"
     done <<< "$(github_refs "$text")"
   fi
   [ -n "$GUARD_CAP" ] || return 0
-  count=$(printf '%s\n' "$holds" | grep -c . || true)
+  count=$(printf '%s\n' "$holds" | awk -F'\t' '$3 == "live" { n++ } END { print n + 0 }')
   [ "$count" -lt "$GUARD_CAP" ] || [ -n "$over_cap" ] \
-    || fail "refused: $count open captain holds fleet-wide (cap $GUARD_CAP); drop or merge stale holds first, or pass --over-cap \"<why this cannot wait>\" for an urgent ask"
+    || fail "refused: $count live captain holds fleet-wide (cap $GUARD_CAP); drop or merge stale holds first, or pass --over-cap \"<why this cannot wait>\" for an urgent ask"
 }
 
 command_hold() {
   local id=${1:-} title='' reason='' repo='' origin='' until='' show state existing_title body='' hold_kind hold_set occurrence
-  local existing_hold_kind='' existing_held='' preserve_hold_set=0 stored_reason previous_origin='' hold_status=0 over_cap=''
+  local existing_hold_kind='' existing_held='' preserve_hold_set=0 stored_reason previous_origin='' hold_status=0 over_cap='' ask
   [ "$#" -ge 1 ] || { usage >&2; exit 2; }
   shift
   while [ "$#" -gt 0 ]; do
@@ -1216,6 +1228,7 @@ command_hold() {
   validate_slug task-id "$id"
   [ -n "$reason" ] || fail "reason must not be empty"
   load_ask_guard
+  ask=$reason
   [ -z "$over_cap" ] || reason=$(printf '%s\nOver cap: %s' "$reason" "$over_cap")
   # bin/fm-hold-reason-lib.sh owns the storage constraint and reversible encoding.
   stored_reason=$(fm_hold_reason_encode "$reason") || fail "could not encode the hold reason"
@@ -1245,7 +1258,11 @@ command_hold() {
     if [ "$existing_hold_kind" = captain ] && [ "$existing_held" = yes ]; then
       preserve_hold_set=1
     fi
-    guard_captain_ask "$reason" "$((1 - preserve_hold_set))" "$over_cap"
+    if [ "$existing_hold_kind" = captain ]; then
+      guard_captain_ask "$ask" 0 "$over_cap"
+    else
+      guard_captain_ask "$ask" 1 "$over_cap"
+    fi
     if [ -n "$title" ]; then
       existing_title=$(show_field_value "$show" title)
       [ "$existing_title" = "$title" ] || fail "existing task $id has a different title"
@@ -1253,7 +1270,7 @@ command_hold() {
   else
     [ -n "$title" ] || fail "--title is required to create task $id"
     validate_one_line title "$title"
-    guard_captain_ask "$reason" 1 "$over_cap"
+    guard_captain_ask "$ask" 1 "$over_cap"
     if [ -z "$repo" ] && [ -n "$origin" ] && [ -f "$STATE/$origin.meta" ]; then
       repo=$(meta_value "$STATE/$origin.meta" project)
       repo=${repo%/}

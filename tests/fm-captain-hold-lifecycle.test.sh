@@ -644,10 +644,6 @@ SH
   pass "captain-hold mutations address the beads backend without a markdown override"
 }
 
-# A Beads workspace with due.required and no types.custom captain type is the
-# live fleet shape. hold must still create a fresh captain row there: waive
-# due rather than invent one, and map to native type task rather than register
-# a Beads captain issue type.
 # The opt-in ask guard (config/captain-hold-guard) against a fixture fleet: a
 # root home with one registered local mate, plus a fleet-data work log.
 test_hold_ask_guard_refuses_bad_asks() {
@@ -704,20 +700,50 @@ test_hold_ask_guard_refuses_bad_asks() {
     --reason "still https://github.com/Acme/dashboard/pull/203 Rec: yes, because green" >/dev/null 2>"$err" \
     || fail "guard: re-holding the hold that cites the PR was refused: $(cat "$err")"
 
-  # Open captain holds fleet-wide now: r-off, r-one, mate-pr, log-pr.
+  # Live captain holds fleet-wide now: r-off, r-one, mate-pr, log-pr. The
+  # captain's own future --until snooze is open but not live.
+  tasks_in "$root" add r-snooze "Snoozed" --repo sample >/dev/null || fail "guard: seed snoozed task"
+  tasks_in "$root" hold r-snooze --kind captain --until 2099-01-01 --reason "later Rec: wait" >/dev/null \
+    || fail "guard: seed snoozed hold"
   printf 'cap 4\n' >> "$root/config/captain-hold-guard"
   if run_captain "$root" hold r-cap --title "Cap" --reason "Pay the invoice? Rec: yes, because due" >/dev/null 2>"$err"; then
     fail "guard: an ask over the fleet cap was accepted"
   fi
-  grep -qF 'refused: 4 open captain holds fleet-wide (cap 4); drop or merge stale holds first, or pass --over-cap' "$err" \
-    || fail "guard: cap refusal did not say how to fix it: $(cat "$err")"
+  grep -qF 'refused: 4 live captain holds fleet-wide (cap 4); drop or merge stale holds first, or pass --over-cap' "$err" \
+    || fail "guard: cap refusal did not say how to fix it, or counted the snoozed hold: $(cat "$err")"
+
+  # A hold whose --until has passed is still an open captain call: it counts
+  # toward the cap, dedupe sees it, and re-holding it is not a new hold.
+  tasks_in "$root" add r-lapsed "Lapsed" --repo sample >/dev/null || fail "guard: seed lapsed task"
+  tasks_in "$root" hold r-lapsed --kind captain --until 2020-01-01 \
+    --reason "merge https://github.com/acme/api/pull/9 Rec: yes" >/dev/null || fail "guard: seed lapsed hold"
+  if run_captain "$root" hold r-cap --title "Cap" --reason "Pay the invoice? Rec: yes, because due" >/dev/null 2>"$err"; then
+    fail "guard: an ask over the fleet cap was accepted with a lapsed hold"
+  fi
+  grep -qF 'refused: 5 live captain holds fleet-wide (cap 4)' "$err" \
+    || fail "guard: the cap did not count the lapsed hold: $(cat "$err")"
+  if run_captain "$root" hold r-lapdup --title "Lapsed dup" --over-cap "urgent" \
+    --reason "Merge https://github.com/acme/api/pull/9 now? Rec: yes, because green" >/dev/null 2>"$err"; then
+    fail "guard: a PR already cited by a lapsed hold was accepted"
+  fi
+  grep -qF "refused: acme/api#9 is already cited by open captain hold r-lapsed in $root/data/backlog.md" "$err" \
+    || fail "guard: duplicate refusal did not name the lapsed hold: $(cat "$err")"
+  run_captain "$root" hold r-lapsed --reason "merge https://github.com/acme/api/pull/9 today? Rec: yes" >/dev/null 2>"$err" \
+    || fail "guard: re-holding a lapsed hold was refused: $(cat "$err")"
+
+  if run_captain "$root" hold r-cap --title "Cap" --reason "Pay the invoice?" \
+    --over-cap "rec: https://github.com/Acme/widgets/pull/26" >/dev/null 2>"$err"; then
+    fail "guard: the --over-cap text stood in for the ask's Rec"
+  fi
+  grep -qF 'refused: the reason has no recommendation' "$err" \
+    || fail "guard: the --over-cap text was checked as part of the ask: $(cat "$err")"
   run_captain "$root" hold r-one --reason "Rotate the key today? Rec: yes, because it leaked" >/dev/null 2>"$err" \
     || fail "guard: re-holding an active hold at the cap was refused: $(cat "$err")"
   run_captain "$root" hold r-cap --title "Cap" --reason "Pay the invoice? Rec: yes, because due" \
-    --over-cap "client send blocked today" >/dev/null 2>"$err" \
+    --over-cap "client send blocked today https://github.com/Acme/widgets/pull/26" >/dev/null 2>"$err" \
     || fail "guard: --over-cap did not let an urgent ask through: $(cat "$err")"
   run_captain "$root" open r-cap >/dev/null 2>&1 || fail "guard: the over-cap ask is not an open captain call"
-  tasks_in "$root" show r-cap --full | fm_hold_reason_decode_stream toon | grep -q 'Over cap: client send blocked today' \
+  tasks_in "$root" show r-cap --full | fm_hold_reason_decode_stream toon | grep -qF 'Over cap: client send blocked today https://github.com/Acme/widgets/pull/26' \
     || fail "guard: the over-cap reason was not recorded on the hold"
 
   printf 'cap 3\n' >> "$root/config/captain-hold-guard"
@@ -729,6 +755,10 @@ test_hold_ask_guard_refuses_bad_asks() {
   pass "captain-hold ask guard is off by default and refuses no-Rec, duplicate-PR and over-cap asks when configured"
 }
 
+# A Beads workspace with due.required and no types.custom captain type is the
+# live fleet shape. hold must still create a fresh captain row there: waive
+# due rather than invent one, and map to native type task rather than register
+# a Beads captain issue type.
 test_hold_creates_a_captain_row_when_beads_requires_due_without_custom_type() {
   local fixture home beads id show issue_type
   require_tasks_axi_beads "captain-hold create under due.required without types.custom" || return 0
