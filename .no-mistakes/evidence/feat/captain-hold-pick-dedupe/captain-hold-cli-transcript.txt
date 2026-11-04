@@ -1,0 +1,65 @@
+$ hold ask-a --title "Pick a route" --reason "which route?"   # no --rec
+fm-captain-hold: a new captain ask must carry your recommended pick: add --rec "<the option you recommend and why>" (optionally 1-4 --option "<text>")
+exit=1
+$ tasks-axi show ask-a
+error: "Task \"ask-a\" not found in this backlog"
+code: NOT_FOUND
+help[1]: Run `tasks-axi list` to see existing tasks
+
+$ hold ask-a --title "Pick a route" --reason "which route?" --option north --rec south   # --option, no wait has rec
+$ hold ask-b --title "Opt only" --reason "x?" --option north   # --option without --rec
+fm-captain-hold: --option needs --rec "<the option you recommend and why>"
+exit=1
+
+$ hold ask-a --title "Pick a route" --reason "which route?" --option north --option south --rec "south, cheaper" --key route-choice
+ask-a
+exit=0
+task:
+  id: ask-a
+  title: Pick a route
+  state: queued
+  blocked: no
+  blocked_by: none
+  held: yes
+  hold_reason: "fm-hold-v1:d2hpY2ggcm91dGU/CjEuIG5vcnRoCjIuIHNvdXRoClJlYzogc291dGgsIGNoZWFwZXI="
+  hold_kind: captain
+  hold_until: "-"
+  kind: captain
+  repo: firstmate
+  priority: "-"
+  created: 2026-11-04
+  closed: "-"
+  deps: none
+  links: none
+  body: "Captain hold set: 2026-11-04T12:22:46Z\nCaptain hold key: route-choice"
+
+$ hold ask-a --reason "which route?"   # retry of already-held task, no --rec
+ask-a
+exit=0
+
+$ hold ask-c --title "Same subject" --reason "route again?" --rec north --key route-choice   # duplicate key
+fm-captain-hold: decision key route-choice is already an open captain hold; attached to ask-a, no new hold created for ask-c
+ask-a
+exit=0
+$ tasks-axi show ask-c
+error: "Task \"ask-c\" not found in this backlog"
+code: NOT_FOUND
+help[1]: Run `tasks-axi list` to see existing tasks
+
+$ answer ask-a --decision-file ans.txt --release
+released: ask-a
+exit=0
+$ hold ask-a --reason "new unrelated ask" --rec yes   # re-hold without --key
+ask-a
+exit=0
+key lines on ask-a: 0
+$ hold ask-d --title "Reuse old key" --reason "fresh ask" --rec ok --key route-choice
+ask-d
+exit=0
+  held: yes
+  hold_kind: captain
+  body: "Captain hold set: 2026-11-04T12:22:52Z\nCaptain hold key: route-choice"
+which route?
+1. north
+2. south
+Rec: south, cheaper
