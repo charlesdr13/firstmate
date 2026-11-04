@@ -1,0 +1,11 @@
+## run 4 (adversarial): new ready work, prior ledger seeded as an old halt already past the window, wake queue read-only
+count: 1
+## ledger seeded: 1793793067 0
+## watcher stderr (halt lines):
+      1 /home/del13s_ubuntu/.no-mistakes/worktrees/680eb455bb43/01M6K64E7BSSDRVGXBZPM024ZV/bin/fm-wake-lib.sh: line 2696: /tmp/fm-lab.xNru0t/state/.wake-queue: Permission denied
+      1 watcher: dispatch-halt alert check failed
+## watcher stdout contains capacity alert? 0
+## ledger after (must still be '<since> 0', no alert recorded): 1793793067 0
+## run 5: queue writable again, re-arm: the alert must now be delivered
+## watcher stdout: check: dispatch halted for 112s with 1 ready: disk: 5084 MB free, under 5120 MB [fix: free disk space]
+## ledger: 1793793067 1793793179

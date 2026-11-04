@@ -1,0 +1,9 @@
+## run 2: re-arm the real watcher (the watcher exits after delivering a wake); captain hold already answered, disk constraint still real
+## ledger before: 1793792978 1793792981
+## after 12s: republished verdict: ["disk: 5113 MB free, under 5120 MB"]
+## capacity-halt wakes queued: 1 (must stay 1: at most once per 24h)
+## ledger: 1793792978 1793792981
+## complete the only ready item
+count: 1
+## after 30s: ledger present? yes (must be no: ready work cleared)
+## watcher stdout (should be empty, no new alert): [check: rearm-resurface]

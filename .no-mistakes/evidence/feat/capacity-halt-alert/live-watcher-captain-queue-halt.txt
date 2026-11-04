@@ -1,0 +1,27 @@
+## lab home: /tmp/fm-lab.xNru0t
+## config/lane-capacity:
+4
+max-captain-holds 0
+## tasks-axi ready:
+count: 1
+ready[1]{id,state,kind,repo,title}:
+  r1,queued,ship,"-",ready ship work
+ready_public_followups: 0 delivery-ready obligations
+help[1]:
+  - Run `tasks-axi start <id>` to dispatch one of these
+## fm-capacity.sh --admit:
+deferred: lane capacity of this home (/tmp/fm-lab.xNru0t/config/lane-capacity) does not admit another lane: disk: 5117 MB free, under 5120 MB; captain-queue: 1 open captain holds, over max-captain-holds 0
+exit=75
+## start real watcher (FM_CAPACITY_HALT_ALERT_SECS=3, FM_POLL=1)
+## after 6s, wake queue entries for capacity-halt:
+1793792981	1	check	capacity-halt	check: dispatch halted for 3s with 1 ready: disk: 5117 MB free, under 5120 MB [fix: free disk space]; captain-queue: 1 open captain holds, over max-captain-holds 0 [fix: answer open captain holds, or raise max-captain-holds]
+## ledger:
+1793792978 1793792981
+## after 6 more seconds, alert count (debounce: must stay 1):
+1
+## answer the captain hold
+## after 60s: ledger present? yes; verdict:
+{"admit":false,"free_lanes":0,"reasons":["disk: 5117 MB free, under 5120 MB","captain-queue: 1 open captain holds, over max-captain-holds 0"]}
+## alert count still: 1
+## watcher stderr (halt-related):
+(none)

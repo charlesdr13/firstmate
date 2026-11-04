@@ -1,0 +1,6 @@
+## run 3: the unheld q1 itself became ready work, so start it too; ready list now:
+count: 0
+## ledger before: 1793792978 1793792981; verdict still constrained: ["disk: 5113 MB free, under 5120 MB"]
+## after 2s: ledger present? no (must be no: ready work cleared, halt debounces afresh)
+## capacity-halt wakes queued: 1
+## watcher stdout: [check: rearm-resurface]
