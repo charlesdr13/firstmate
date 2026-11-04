@@ -1,0 +1,32 @@
+## re-raise suppression: same lab home, still halted, ledger from the first alert kept; watcher restarted
+ledger before: 1793792038 1793792041
+watcher exit=0
+wake-queue lines after: 0
+ledger after: 1793792038 1793792041
+
+## halt clears: min-disk-gb removed from config, watcher restarted
+capacity: free_lanes=4 reason=ok lanes=0 target=4 secondmates=0 load1=6.45 cores=16 mem_free_pct=42 disk_free_mb=5123
+watcher exit=124
+wake-queue lines: 0
+ledger: 1793792038 1793792041
+
+## halt returns: debounce restarts and a fresh alert fires
+watcher exit=124
+wake-queue:
+
+## R2 captain-queue live (real backlog, real host)
+$ unset key:
+capacity: free_lanes=4 reason=ok lanes=0 target=4 secondmates=0 load1=6.37 cores=16 mem_free_pct=43 disk_free_mb=5123
+$ max-captain-holds 3 (3 open):
+capacity: free_lanes=4 reason=ok lanes=0 target=4 secondmates=0 load1=6.37 cores=16 mem_free_pct=43 disk_free_mb=5123
+$ max-captain-holds 2 (3 open):
+capacity: free_lanes=0 reason=captain-queue lanes=0 target=4 secondmates=0 load1=6.37 cores=16 mem_free_pct=43 disk_free_mb=5123
+Lanes: 0 running of 4 target, 0 open.
+Host: load 6.37 on 16 cores, memory free 43%, disk free 5123 MB.
+Constrained: captain-queue - hold new dispatch until it clears.
+$ --admit:
+deferred: lane capacity of this home (/tmp/fm-lab.VGjeFM/config/lane-capacity) does not admit another lane: captain-queue: 3 open captain holds, over max-captain-holds 2
+exit=75
+$ watcher with captain-queue halt and 2 ready:
+watcher exit=0
+1793792130	2	check	capacity-halt	check: dispatch halted for 3s with 2 ready: disk: home 5.0 GB free, under 999999 GB [fix: free disk space, or lower min-disk-gb]

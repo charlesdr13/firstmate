@@ -1,0 +1,9 @@
+## halt clears (captain hold answered): unhold q3 so 2 open holds <= max-captain-holds 2; watcher restarted
+ledger before: 1793792189 1793792192
+watcher exit=0
+check: rearm-resurface
+watcher exit=124
+check: rearm-resurface
+published verdict: {"admit":true,"free_lanes":4,"reasons":[]}
+ledger after: <removed>
+wake-queue lines: 0

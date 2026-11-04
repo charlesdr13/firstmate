@@ -1,0 +1,21 @@
+## live watcher run, lab home, real host probes, min-disk-gb 999999, FM_CAPACITY_HALT_ALERT_SECS=3
+$ fm-tasks-axi.sh ready
+count: 2
+ready[2]{id,state,kind,repo,title}:
+  r1,queued,ship,"-",ready work
+  r2,queued,ship,"-",more ready work
+ready_public_followups: 0 delivery-ready obligations
+help[1]:
+  - Run `tasks-axi start <id>` to dispatch one of these
+$ fm-capacity.sh (real host)
+capacity: free_lanes=0 reason=disk lanes=0 target=4 secondmates=0 load1=5.50 cores=16 mem_free_pct=43 disk_free_mb=5124
+Lanes: 0 running of 4 target, 0 open.
+Host: load 5.50 on 16 cores, memory free 43%, disk free 5124 MB.
+Constrained: disk - hold new dispatch until it clears.
+$ fm-watch.sh exit=0; stdout:
+check: dispatch halted for 3s with 2 ready: disk: home 5.0 GB free, under 999999 GB [fix: free disk space, or lower min-disk-gb]
+$ state/.wake-queue:
+1793792041	1	check	capacity-halt	check: dispatch halted for 3s with 2 ready: disk: home 5.0 GB free, under 999999 GB [fix: free disk space, or lower min-disk-gb]
+$ state/.capacity-halt-alert:
+1793792038 1793792041
+$ stderr tail:

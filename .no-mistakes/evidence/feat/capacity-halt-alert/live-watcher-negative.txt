@@ -1,0 +1,27 @@
+## disabled: FM_CAPACITY_HALT_ALERT_SECS=0, halted with ready work
+$ fm-capacity.sh
+capacity: free_lanes=0 reason=disk lanes=0 target=4 secondmates=0 load1=5.45 cores=16 mem_free_pct=43 disk_free_mb=5124
+$ fm-tasks-axi.sh ready | count
+count: 1
+watcher exit=124 (124 = still running after 10s, no actionable wake)
+wake-queue: <none>
+halt ledger: <none>
+
+## no ready work: halted by disk, empty backlog
+$ fm-capacity.sh
+capacity: free_lanes=0 reason=disk lanes=0 target=4 secondmates=0 load1=5.14 cores=16 mem_free_pct=43 disk_free_mb=5123
+$ fm-tasks-axi.sh ready | count
+count: 0
+watcher exit=124 (124 = still running after 10s, no actionable wake)
+wake-queue: <none>
+halt ledger: <none>
+
+## full lane cap (1 of 1 running), disk constrained, ready work
+$ fm-capacity.sh
+capacity: free_lanes=0 reason=disk lanes=1 target=1 secondmates=0 load1=4.89 cores=16 mem_free_pct=43 disk_free_mb=5123
+$ fm-tasks-axi.sh ready | count
+count: 1
+watcher exit=124 (124 = still running after 10s, no actionable wake)
+wake-queue: <none>
+halt ledger: <none>
+

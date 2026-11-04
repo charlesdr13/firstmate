@@ -1,0 +1,12 @@
+## (redo) halt clears: config has no constraint (captain holds 3, max-captain-holds unset); watcher runs 45s so it republishes
+ledger before: 1793792127 1793792130
+watcher exit=0 (124 = ran the full 45s with no actionable wake)
+published verdict: {"admit":true,"free_lanes":4,"reasons":[]}
+ledger after: 1793792127 1793792130
+wake-queue lines: 0
+
+## (redo) R2 halt: max-captain-holds 2 with 3 open captain holds and 2 ready; watcher runs until it alerts
+watcher exit=0 (124 = ran the full 60s with no actionable wake)
+published verdict: {"admit":false,"free_lanes":0,"reasons":["captain-queue: 3 open captain holds, over max-captain-holds 2"]}
+wake-queue:
+1793792192	3	check	capacity-halt	check: dispatch halted for 3s with 2 ready: captain-queue: 3 open captain holds, over max-captain-holds 2 [fix: answer open captain holds, or raise max-captain-holds]
