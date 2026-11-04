@@ -1,0 +1,92 @@
+## S1 first wake from a source: presented, no would-skip
+$ bin/fm-wake-drain.sh
+1793792379	1	check	pr-42	PR #42 checks green, review pending
+rc=0
+WAKE_ACK_REQUIRED: after handling completes run bin/fm-wake-drain.sh --ack-through 1 --recovery-generation 3924161.1793792379.OqYud6
+$ bin/fm-wake-drain.sh --ack-through 1 --recovery-generation 3924161.1793792379.OqYud6
+rc=0
+--- .wake-would-skip.log:
+(absent)
+--- .wake-last-facts:
+check	pr-42	4197310097:47	1
+
+## S2 same facts again later: presented+acked as before, one would-skip
+$ bin/fm-wake-drain.sh
+1793792382	2	check	pr-42	PR #42 checks green, review pending
+rc=0
+WAKE_ACK_REQUIRED: after handling completes run bin/fm-wake-drain.sh --ack-through 2 --recovery-generation 3930254.1793792382.fgUwu5
+$ bin/fm-wake-drain.sh --ack-through 2 --recovery-generation 3930254.1793792382.fgUwu5
+rc=0
+--- .wake-would-skip.log:
+1793792382	check	pr-42	4197310097:47
+--- .wake-last-facts:
+check	pr-42	4197310097:47	2
+
+## S3 changed payload / other source: no new record
+$ bin/fm-wake-drain.sh
+1793792384	3	check	pr-42	PR #42 merged
+1793792384	4	check	pr-43	PR #42 merged
+rc=0
+WAKE_ACK_REQUIRED: after handling completes run bin/fm-wake-drain.sh --ack-through 4 --recovery-generation 3932528.1793792384.aliZG3
+$ bin/fm-wake-drain.sh --ack-through 4 --recovery-generation 3932528.1793792384.aliZG3
+rc=0
+--- .wake-would-skip.log:
+1793792382	check	pr-42	4197310097:47
+--- .wake-last-facts:
+check	pr-42	978034010:25	3
+check	pr-43	368845408:25	4
+
+## S4 adversarial: re-drain without ack (same row re-presented): no new record
+$ bin/fm-wake-drain.sh
+1793792386	5	check	pr-43	PR #42 merged
+rc=0
+WAKE_ACK_REQUIRED: after handling completes run bin/fm-wake-drain.sh --ack-through 5 --recovery-generation 3934218.1793792386.KT9HK9
+$ bin/fm-wake-drain.sh
+1793792386	5	check	pr-43	PR #42 merged
+rc=0
+WAKE_ACK_REQUIRED: after handling completes run bin/fm-wake-drain.sh --ack-through 5 --recovery-generation 3934218.1793792386.KT9HK9
+--- .wake-would-skip.log:
+1793792382	check	pr-42	4197310097:47
+1793792386	check	pr-43	368845408:25
+--- .wake-last-facts:
+check	pr-42	978034010:25	3
+check	pr-43	368845408:25	5
+$ bin/fm-wake-drain.sh --ack-through 5 --recovery-generation 3934218.1793792386.KT9HK9
+rc=0
+
+## S5 adversarial: elapsed-time payload never matches (known ceiling)
+$ bin/fm-wake-drain.sh
+1793792389	6	check	job	running 10s
+rc=0
+WAKE_ACK_REQUIRED: after handling completes run bin/fm-wake-drain.sh --ack-through 6 --recovery-generation 3937638.1793792389.AuOPUD
+$ bin/fm-wake-drain.sh --ack-through 6 --recovery-generation 3937638.1793792389.AuOPUD
+rc=0
+$ bin/fm-wake-drain.sh
+1793792391	7	check	job	running 20s
+rc=0
+WAKE_ACK_REQUIRED: after handling completes run bin/fm-wake-drain.sh --ack-through 7 --recovery-generation 3939872.1793792391.bUE5FV
+$ bin/fm-wake-drain.sh --ack-through 7 --recovery-generation 3939872.1793792391.bUE5FV
+rc=0
+--- .wake-would-skip.log:
+1793792382	check	pr-42	4197310097:47
+1793792386	check	pr-43	368845408:25
+--- .wake-last-facts:
+check	pr-42	978034010:25	3
+check	pr-43	368845408:25	5
+check	job	2225777363:21	7
+
+## S6 adversarial: unwritable shadow files never fail the drain
+$ bin/fm-wake-drain.sh
+1793792393	8	check	job	x
+rc=0
+/home/del13s_ubuntu/.no-mistakes/worktrees/680eb455bb43/01M6K5FE823YENJ677GNQ2Y87W/bin/fm-wake-lib.sh: line 2921: /tmp/fm-lab.nDaZLO/state/.wake-last-facts: Is a directory
+WAKE_ACK_REQUIRED: after handling completes run bin/fm-wake-drain.sh --ack-through 8 --recovery-generation 3942587.1793792393.wLqc3k
+$ bin/fm-wake-drain.sh --ack-through 8 --recovery-generation 3942587.1793792393.wLqc3k
+rc=0
+$ bin/fm-wake-drain.sh
+1793792395	9	check	job	x
+rc=0
+/home/del13s_ubuntu/.no-mistakes/worktrees/680eb455bb43/01M6K5FE823YENJ677GNQ2Y87W/bin/fm-wake-lib.sh: line 2921: /tmp/fm-lab.nDaZLO/state/.wake-last-facts: Is a directory
+WAKE_ACK_REQUIRED: after handling completes run bin/fm-wake-drain.sh --ack-through 9 --recovery-generation 3945185.1793792395.so87QO
+$ bin/fm-wake-drain.sh --ack-through 9 --recovery-generation 3945185.1793792395.so87QO
+rc=0

@@ -1,0 +1,3 @@
+ok - equal facts from the same source log one would-skip and the wake is still presented
+ok - re-draining an unacknowledged row never logs a would-skip
+ok - changed payloads and distinct sources never log a would-skip

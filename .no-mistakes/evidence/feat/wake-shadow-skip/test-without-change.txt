@@ -1,0 +1,4 @@
+tests/fm-wake-drain-shadow-skip.test.sh: line 36: /tmp/fm-wake-drain-shadow-skip-tests.CMQyAt/equal/state/.wake-would-skip.log: No such file or directory
+tests/fm-wake-drain-shadow-skip.test.sh: line 36: [: : integer expected
+cat: /tmp/fm-wake-drain-shadow-skip-tests.CMQyAt/equal/state/.wake-would-skip.log: No such file or directory
+not ok - expected one would-skip record: 
