@@ -1,0 +1,118 @@
+## S1 new ask without --rec is refused, nothing written
+
+$ fm-captain-hold.sh hold q-norec --title Pick a DB --reason Which DB?
+stderr: fm-captain-hold: a new captain ask must carry your recommended pick: add --rec "<the option you recommend and why>" (optionally 1-4 --option "<text>")
+exit: 1
+0
+row q-norec absent: OK
+## S2 new ask with options + rec renders numbered lines and Rec:
+
+$ fm-captain-hold.sh hold q-db --title Pick a DB --reason Which DB? --option Postgres --option SQLite --rec 1 --key pick-db
+stdout: q-db
+exit: 0
+--- backlog row q-db:
+  task:
+    id: q-db
+    title: Pick a DB
+    state: queued
+    blocked: no
+    blocked_by: none
+    held: yes
+    hold_reason: "fm-hold-v1:V2hpY2ggREI/CjEuIFBvc3RncmVzCjIuIFNRTGl0ZQpSZWM6IDE="
+    hold_kind: captain
+    hold_until: "-"
+    kind: captain
+    repo: firstmate
+    priority: "-"
+    created: 2026-11-04
+    closed: "-"
+    deps: none
+    links: none
+    body: "Captain hold set: 2026-11-04T11:54:39Z\nCaptain hold key: pick-db"
+## S3 fifth --option refused
+
+$ fm-captain-hold.sh hold q-five --title x --reason r --option a --option b --option c --option d --option e --rec 1
+stderr: fm-captain-hold: at most 4 --option values are allowed
+exit: 1
+0
+row q-five absent: OK
+## S4 --option without --rec refused (review decision)
+
+$ fm-captain-hold.sh hold q-optnorec --title x --reason r --option a --option b
+stderr: fm-captain-hold: --option needs --rec "<the option you recommend and why>"
+exit: 1
+## S5 duplicate key attaches to existing hold
+
+$ fm-captain-hold.sh hold q-db-dup --title Pick a DB again --reason DB? --rec Postgres --key pick-db
+stdout: q-db
+stderr: fm-captain-hold: decision key pick-db is already an open captain hold; attached to q-db, no new hold created for q-db-dup
+exit: 0
+0
+row q-db-dup absent: OK
+## S6 distinct key stays distinct
+
+$ fm-captain-hold.sh hold q-cache --title Pick a cache --reason Cache? --rec Redis --key pick-cache
+stdout: q-cache
+exit: 0
+## S7 invalid key rejected
+
+$ fm-captain-hold.sh hold q-bad --title x --reason r --rec 1 --key Bad Key!
+stderr: fm-captain-hold: --key must be a privacy-safe slug: Bad Key!
+exit: 1
+## S8 retry on already-captain-held task needs no --rec
+
+$ fm-captain-hold.sh hold q-db --reason Which DB? (retry)
+stdout: q-db
+exit: 0
+## S9 --until deferral needs no --rec
+
+$ fm-captain-hold.sh hold q-cache --reason revisit --until 2099-01-01
+stdout: q-cache
+exit: 0
+## S10 stale key cleared on re-hold after release (review decision)
+
+$ fm-captain-hold.sh answer q-db --decision-file /tmp/fm-lab.SWfHnM/ans --release
+stdout: released: q-db
+exit: 0
+
+$ fm-captain-hold.sh hold q-db --reason New unrelated ask --rec yes
+stdout: q-db
+exit: 0
+--- backlog row q-db:
+  task:
+    id: q-db
+    title: Pick a DB
+    state: queued
+    blocked: no
+    blocked_by: none
+    held: yes
+    hold_reason: "fm-hold-v1:TmV3IHVucmVsYXRlZCBhc2sKUmVjOiB5ZXM="
+    hold_kind: captain
+    hold_until: "-"
+    kind: captain
+    repo: firstmate
+    priority: "-"
+    created: 2026-11-04
+    closed: "-"
+    deps: none
+    links: none
+    body: "Captain hold set: 2026-11-04T11:54:45Z\n\nResolution recorded by fm-captain-hold.\nDecision digest: ff386875a715143d42f807bb3e191a9b5ce7a24ee818e3f0cc321ca5adc767d0\nResolution mode: released\n\nCaptain decision:\nUse Postgres."
+
+$ fm-captain-hold.sh hold q-new --title Another DB ask --reason r --rec 1 --key pick-db
+stdout: q-new
+exit: 0
+## S11 read paths unaffected
+
+$ fm-captain-hold.sh open q-db
+exit: 0
+
+$ fm-captain-hold.sh open q-new
+exit: 0
+S2 decoded reason:
+Which DB?
+1. Postgres
+2. SQLite
+Rec: 1
+S10 decoded reason:
+New unrelated ask
+Rec: yes
