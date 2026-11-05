@@ -1,0 +1,2 @@
+not ok - a duplicate ask attached to a hold whose key changed while it waited
+exit=1

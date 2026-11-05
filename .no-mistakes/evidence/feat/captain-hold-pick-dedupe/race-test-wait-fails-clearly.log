@@ -1,0 +1,2 @@
+not ok - the duplicate ask never reached sample-first's control lock within 10s: fm-captain-hold: simulated: duplicate ask exited before the contested lock
+exit=1 secs=32

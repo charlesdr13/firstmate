@@ -1,0 +1,9 @@
+uptime:  20:31:41 up 22:54,  1 user,  load average: 2.63, 3.29, 3.31
+loaded run 1:
+ok - a duplicate ask rechecks the hold's key under its lock before attaching
+PASS test_duplicate_key_rechecks_key_under_lock
+exit=0 secs=37
+loaded run 2:
+ok - a duplicate ask rechecks the hold's key under its lock before attaching
+PASS test_duplicate_key_rechecks_key_under_lock
+exit=0 secs=38
