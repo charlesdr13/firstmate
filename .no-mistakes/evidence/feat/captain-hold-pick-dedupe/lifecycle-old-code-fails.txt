@@ -1,0 +1,5 @@
+== old code cfc22944 (expected to fail) ==
+ok - cleanup preserves every byte of a retained body's non-ASCII characters
+fm-captain-hold: decision key ship-gate is already an open captain hold; attached to sample-call for origin sample-review-b, no new hold created for sample-dup
+not ok - extending the unanswered call dropped the attached origin: fm-captain-hold: captain-held task sample-call was held for origin sample-review-a, not sample-review-b; hold a task for sample-review-b or list the right one
+exit=1

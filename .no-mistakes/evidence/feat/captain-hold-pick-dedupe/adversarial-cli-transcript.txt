@@ -1,0 +1,32 @@
+ok - cleanup preserves every byte of a retained body's non-ASCII characters
+$ hold sample-call --rec north --key ship-gate --origin sample-review-a --until 2000-01-01
+sample-call
+rc=0
+$ hold sample-dup --key ship-gate --origin sample-review-b
+sample-dup
+rc=0
+  held: no
+  hold_kind: captain
+$ hold sample-call --reason "later still" --until 2099-01-01   (extend expired, unanswered)
+sample-call
+rc=0
+  held: yes
+  body: "Captain hold set: 2026-11-05T07:53:05Z\n\nCaptain hold key: ship-gate\n\nCaptain hold origin: sample-review-a\n\nOrigin: sample-review-a"
+$ complete sample-review-b sample-call
+fm-captain-hold: captain-held task sample-call was held for origin sample-review-a, not sample-review-b; hold a task for sample-review-b or list the right one
+rc=1
+$ answer sample-call --release
+released: sample-call
+rc=0
+  held: no
+  hold_kind: "-"
+$ hold sample-call --reason "new question" (no --rec, after release)
+fm-captain-hold: a new captain ask must carry your recommended pick: add --rec "<the option you recommend and why>" (optionally 1-4 --option "<text>")
+rc=1
+$ hold sample-call --reason "new question" --rec south --origin sample-review-a
+sample-call
+rc=0
+  held: yes
+$ complete sample-review-b sample-call (stale attached review, must be refused)
+fm-captain-hold: captain-held task sample-call was held for origin sample-review-a, not sample-review-b; hold a task for sample-review-b or list the right one
+rc=1
