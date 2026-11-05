@@ -1,0 +1,2 @@
+ok - hold requires a recommended pick and renders numbered options
+ok - a duplicate decision key attaches to the open hold and distinct keys stay distinct

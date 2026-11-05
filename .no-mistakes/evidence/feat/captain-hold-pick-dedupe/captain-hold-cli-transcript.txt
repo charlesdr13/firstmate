@@ -1,65 +1,61 @@
-$ hold ask-a --title "Pick a route" --reason "which route?"   # no --rec
+=== S1: retry without --rec keeps options and Rec ===
+$ fm-captain-hold.sh hold route-q --title Route --reason which route? --option north --option south --rec south, cheaper
+route-q
+[exit 0]
+$ tasks show route-q --full
+  hold_reason: "which route?\n1. north\n2. south\nRec: south, cheaper"
+  body: "Captain hold set: 2026-11-05T07:13:29Z"
+[exit 0]
+$ fm-captain-hold.sh hold route-q --reason which route, again?
+route-q
+[exit 0]
+$ tasks show route-q --full
+  hold_reason: "which route, again?\n1. north\n2. south\nRec: south, cheaper"
+  body: "Captain hold set: 2026-11-05T07:13:29Z"
+[exit 0]
+=== S2: second ask with same --key attaches and records link ===
+$ fm-captain-hold.sh hold first-ask --title First --reason ship? --rec yes --key ship-gate --origin review-a
+first-ask
+[exit 0]
+$ fm-captain-hold.sh hold second-ask --title Second --reason ship it? --rec yes --key ship-gate --origin review-b
+fm-captain-hold: decision key ship-gate is already an open captain hold; attached to first-ask for origin review-b, no new hold created for second-ask
+first-ask
+[exit 0]
+$ tasks show second-ask --full
+error: "Task \"second-ask\" not found in this backlog"
+[exit 1]
+$ tasks show first-ask --full
+  hold_reason: "ship?\nRec: yes"
+  body: "Captain hold set: 2026-11-05T07:13:31Z\nCaptain hold attached origins: review-b\n\nCaptain hold key: ship-gate\n\nCaptain hold origin: review-a\n\nOrigin: review-a"
+[exit 0]
+$ fm-captain-hold.sh complete review-b first-ask
+complete: review-b captain-call inventory reviewed (first-ask)
+[exit 0]
+$ fm-captain-hold.sh complete review-a first-ask
+complete: review-a captain-call inventory reviewed (first-ask)
+[exit 0]
+=== S3: failed backlog listing fails closed ===
+$ fm-captain-hold.sh hold blind-ask --title Blind --reason ship? --rec yes --key ship-gate
+fm-captain-hold: could not list the backlog to check decision key ship-gate for an open hold; no hold created for blind-ask
+[exit 1]
+$ tasks show blind-ask --full
+error: "Task \"blind-ask\" not found in this backlog"
+[exit 1]
+=== S4 (guard): new ask without --rec refused, --option without --rec refused ===
+$ fm-captain-hold.sh hold no-pick --title No pick --reason which?
 fm-captain-hold: a new captain ask must carry your recommended pick: add --rec "<the option you recommend and why>" (optionally 1-4 --option "<text>")
-exit=1
-$ tasks-axi show ask-a
-error: "Task \"ask-a\" not found in this backlog"
-code: NOT_FOUND
-help[1]: Run `tasks-axi list` to see existing tasks
-
-$ hold ask-a --title "Pick a route" --reason "which route?" --option north --rec south   # --option, no wait has rec
-$ hold ask-b --title "Opt only" --reason "x?" --option north   # --option without --rec
+[exit 1]
+$ tasks show no-pick --full
+error: "Task \"no-pick\" not found in this backlog"
+[exit 1]
+$ fm-captain-hold.sh hold route-q --reason x --option a --option b
 fm-captain-hold: --option needs --rec "<the option you recommend and why>"
-exit=1
-
-$ hold ask-a --title "Pick a route" --reason "which route?" --option north --option south --rec "south, cheaper" --key route-choice
-ask-a
-exit=0
-task:
-  id: ask-a
-  title: Pick a route
-  state: queued
-  blocked: no
-  blocked_by: none
-  held: yes
-  hold_reason: "fm-hold-v1:d2hpY2ggcm91dGU/CjEuIG5vcnRoCjIuIHNvdXRoClJlYzogc291dGgsIGNoZWFwZXI="
-  hold_kind: captain
-  hold_until: "-"
-  kind: captain
-  repo: firstmate
-  priority: "-"
-  created: 2026-11-04
-  closed: "-"
-  deps: none
-  links: none
-  body: "Captain hold set: 2026-11-04T12:22:46Z\nCaptain hold key: route-choice"
-
-$ hold ask-a --reason "which route?"   # retry of already-held task, no --rec
-ask-a
-exit=0
-
-$ hold ask-c --title "Same subject" --reason "route again?" --rec north --key route-choice   # duplicate key
-fm-captain-hold: decision key route-choice is already an open captain hold; attached to ask-a, no new hold created for ask-c
-ask-a
-exit=0
-$ tasks-axi show ask-c
-error: "Task \"ask-c\" not found in this backlog"
-code: NOT_FOUND
-help[1]: Run `tasks-axi list` to see existing tasks
-
-$ answer ask-a --decision-file ans.txt --release
-released: ask-a
-exit=0
-$ hold ask-a --reason "new unrelated ask" --rec yes   # re-hold without --key
-ask-a
-exit=0
-key lines on ask-a: 0
-$ hold ask-d --title "Reuse old key" --reason "fresh ask" --rec ok --key route-choice
-ask-d
-exit=0
-  held: yes
-  hold_kind: captain
-  body: "Captain hold set: 2026-11-04T12:22:52Z\nCaptain hold key: route-choice"
-which route?
-1. north
-2. south
-Rec: south, cheaper
+[exit 1]
+=== S5: distinct key stays separate ===
+$ fm-captain-hold.sh hold other-ask --title Other --reason tag? --rec yes --key tag-gate
+other-ask
+[exit 0]
+$ tasks show other-ask --full
+  hold_reason: "tag?\nRec: yes"
+  body: "Captain hold set: 2026-11-05T07:13:37Z\nCaptain hold key: tag-gate"
+[exit 0]
